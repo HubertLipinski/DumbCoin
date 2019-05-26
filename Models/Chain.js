@@ -17,7 +17,7 @@ class Blockchain {
     mineBlock(block) {
         this.blocks.push(block);
         console.log("Block mined!");
-        console.log(this.getChain());
+        console.log(JSON.stringify(this.getChain(),null, '\t'));
     }
 
     async newTransaction(sender, receiver, amount) {

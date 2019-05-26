@@ -1,8 +1,9 @@
 const crypto = require('crypto');
 
+const difficulty = 21371337;
 const generateProof = (prevProof) => new Promise((resolve) => {
     setImmediate(async () => {
-       let proof = Math.random() * 1000001;
+       let proof = Math.random() * difficulty;
        const dontMine = process.env.BREAK;
        if (isProofValid(prevProof, proof) || dontMine === 'true') {
            resolve({proof, dontMine});
