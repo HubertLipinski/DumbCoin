@@ -2,17 +2,16 @@ const crypto = require('crypto');
 
 let DIFFICULTY = 3;
 
-const generateProof = (prevProof) => new Promise((resolve) => {
-    setImmediate(async () => {
+const generateProof = (prevProof) => {
        let proof = Math.random() * 2137;
        const dontMine = process.env.BREAK;
        if (isProofValid(prevProof, proof) || dontMine === 'true') {
-           resolve({proof, dontMine});
+           return ({proof, dontMine});
        } else {
-           resolve(await generateProof(prevProof));
+           return generateProof(prevProof);
        }
-    });
-});
+};
+
 
 
 const isProofValid = (prevProof, currentProof) => {
