@@ -1,22 +1,24 @@
 const BlockChain = require('./src/Models/Chain');
+const Transaction = require('./src/Models/Transaction');
+const EC = require('elliptic').ec;
+const ec = new EC('secp256k1');
+
+const myKey = ec.keyFromPrivate('265b53451b36a1562207829e2902904b93e6d8abf566216221a9d9f8a85eb353');
+const myWalletAddress = myKey.getPublic('hex');
 
 const blockChain = new BlockChain();
 
-console.log("Utils block: ", blockChain.checkBlock());
-
-blockChain.createTransaction("jan", "adam", 50);
-blockChain.createTransaction("foo", "bar", 1337);
 
 
-//test of wallet ballance and
-blockChain.mineCurrentTransactions('wallet').then(
-    () => {
-        console.log("DONE", blockChain.getBalanceOfAddress('wallet')); //expected: 0
-        blockChain.createTransaction("test1", "test2", 2);
-        blockChain.mineCurrentTransactions('2').then(
-            () => {
-                console.log("DONE", blockChain.getBalanceOfAddress('wallet')); //expected: 50
-            });
-    });
+const transaction1 = new Transaction(myWalletAddress, myWalletAddress, 10);
+transaction1.signTransaction(myKey);
+blockChain.addTransaction(transaction1);
+
+blockChain.mineCurrentTransactions(myWalletAddress);
+
+console.log("balance: ", blockChain.getBalanceOfAddress(myWalletAddress));
+
+console.log("Is ckchain valid?: ", blockChain.checkChain());
+console.log(blockChain.getCurrentTransactions());
 
 //todo add express and socket.io functionality

@@ -21,31 +21,38 @@ class Blockchain {
 
     mineBlock(block) {
         this.blocks.push(block);
-        console.log("Block mined: ", block);
         console.log("Block mined: ", block.hashValue());
 
     }
 
-    async mineCurrentTransactions(rewardAddress) {
-            if(this.currentTransactions.length === 2) {
+    mineCurrentTransactions(rewardAddress) {
+            if(this.currentTransactions.length === 1) {
                 console.log("Mining...");
                 const prevBlock = this.lastBlock();
                 process.env.BREAK = false;
                 const block = new Block(prevBlock.getIndex()+1, prevBlock.hashValue(), this.currentTransactions);
-                const { proof, dontMine } = await generateProof(prevBlock.getProof());
+                const { proof, dontMine } =  generateProof(prevBlock.getProof());
                 block.setProof(proof);
                 this.currentTransactions = [];
                 if (dontMine !== 'true') {
                     this.mineBlock(block);
                     this.currentTransactions = [
-                        new Transaction('server', rewardAddress, this.miningReward)
+                        new Transaction(null, rewardAddress, this.miningReward)
                     ];
                 }
             }
     }
 
-    createTransaction(sender, receiver, amount) {
-        const transaction = new Transaction(sender, receiver, amount);
+    addTransaction(transaction) {
+        if(transaction.sender === transaction.receiver)
+            throw new Error('You cannot send money to yourself!');
+
+        if(!transaction.sender || !transaction.receiver)
+            throw new Error('Transaction must have sender and receiver!');
+
+        if(!transaction.isValid())
+            throw new Error('Cannot add invalid transaction!');
+
         this.currentTransactions.push(transaction);
     }
 
@@ -74,18 +81,20 @@ class Blockchain {
         return this.blocks;
     }
 
-    checkBlock() {
-        const blocks = this;
-        let prevBlock = blocks[0];
-        for (let i=0; i<blocks.length; i++) {
-            const currentBlock = blocks[i];
-            if (currentBlock.prevBlockHash() !== prevBlock.hashValue()) {
+    checkChain() {
+        for (let i=1; i<this.blocks.length; i++) {
+            const currentBlock = this.blocks[i];
+            const prevBlock = this.blocks[i-1];
+
+            if(!currentBlock.hasValidTransactions())
                 return false;
-            }
-            if (!isProofValid(prevBlock.getProof(), currentBlock.getProof())) {
+
+            if (currentBlock.prevBlockHash() !== prevBlock.hashValue())
                 return false;
-            }
-            prevBlock = currentBlock;
+
+            if (!isProofValid(prevBlock.getProof(), currentBlock.getProof()))
+                return false;
+
         }
         return true;
     }
