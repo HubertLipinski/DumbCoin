@@ -1,7 +1,7 @@
 const Block = require('./Block');
 const Transaction = require('./Transaction');
 
-const { isProofValid, generateProof } = require('../Check/proof');
+const { isProofValid, generateProof } = require('../Utils/proof');
 
 class Blockchain {
     constructor() {
