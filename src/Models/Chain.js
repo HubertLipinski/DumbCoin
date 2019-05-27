@@ -4,11 +4,12 @@ const Transaction = require('./Transaction');
 const { isProofValid, generateProof } = require('../Utils/proof');
 
 class Blockchain {
-    constructor() {
+    constructor(socketIo) {
         this.blocks = [Blockchain.createGenesisBlock()];
         this.currentTransactions = [];
         this.miningReward = 50;
         this.nodes = [];
+        this.io = socketIo;
     }
 
     static createGenesisBlock() {
@@ -17,12 +18,13 @@ class Blockchain {
 
     addNode(node) {
         this.nodes.push(node);
+        console.log("Node list: ", this.nodes.length);
     }
 
     mineBlock(block) {
         this.blocks.push(block);
-        console.log("Block mined: ", block.hashValue());
-
+        console.log("[not server] Block mined: ", block.hashValue());
+        // this.io.emit('block_mined', block);
     }
 
     mineCurrentTransactions(rewardAddress) {
