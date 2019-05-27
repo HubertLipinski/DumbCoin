@@ -1,8 +1,8 @@
-const BlockChain = require('./Models/Chain');
+const BlockChain = require('./src/Models/Chain');
 
 const blockChain = new BlockChain();
 
-console.log("Check block: ", blockChain.checkBlock());
+console.log("Utils block: ", blockChain.checkBlock());
 
 blockChain.createTransaction("jan", "adam", 50);
 blockChain.createTransaction("foo", "bar", 1337);
