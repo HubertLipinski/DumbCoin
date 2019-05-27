@@ -4,10 +4,15 @@ const Transaction = require('./Transaction');
 const { isProofValid, generateProof } = require('../Check/proof');
 
 class Blockchain {
-    constructor(blocks) {
-        this.blocks = blocks || [new Block(0,1,[],0)];
+    constructor() {
+        this.blocks = [Blockchain.createGenesisBlock()];
         this.currentTransactions = [];
+        this.miningReward = 50;
         this.nodes = [];
+    }
+
+    static createGenesisBlock() {
+        return new Block(0,1,[],0);
     }
 
     addNode(node) {
@@ -16,26 +21,49 @@ class Blockchain {
 
     mineBlock(block) {
         this.blocks.push(block);
-        console.log("Block mined!");
-        console.log(JSON.stringify(this.getChain(),null, '\t'));
+        console.log("Block mined: ", block);
+        console.log("Block mined: ", block.hashValue());
+
     }
 
-    async newTransaction(sender, receiver, amount) {
+    async mineCurrentTransactions(rewardAddress) {
+            if(this.currentTransactions.length === 2) {
+                console.log("Mining...");
+                const prevBlock = this.lastBlock();
+                process.env.BREAK = false;
+                const block = new Block(prevBlock.getIndex()+1, prevBlock.hashValue(), this.currentTransactions);
+                const { proof, dontMine } = await generateProof(prevBlock.getProof());
+                block.setProof(proof);
+                this.currentTransactions = [];
+                if (dontMine !== 'true') {
+                    this.mineBlock(block);
+                    this.currentTransactions = [
+                        new Transaction('server', rewardAddress, this.miningReward)
+                    ];
+                }
+            }
+    }
+
+    createTransaction(sender, receiver, amount) {
         const transaction = new Transaction(sender, receiver, amount);
         this.currentTransactions.push(transaction);
-        if (this.currentTransactions.length === 2) {
-            console.log("Mining...");
-            const prevBlock = this.lastBlock();
-            process.env.BREAK = false;
-            const block = new Block(prevBlock.getIndex()+1, prevBlock.hashValue(), this.currentTransactions);
-            //check block validation
-            const { proof, dontMine } = await generateProof(prevBlock.getProof());
-            block.setProof(proof);
-            this.currentTransactions = [];
-            if (dontMine !== 'true') {
-                this.mineBlock(block);
+    }
+
+    getCurrentTransactions() {
+        return JSON.stringify(this.currentTransactions);
+    }
+
+    getBalanceOfAddress(address) {
+        let balance = 0;
+        for (const block of this.blocks) {
+            for(const transaction of block.transactions) {
+                if(transaction.sender === address)
+                    balance -= transaction.amount;
+                if(transaction.receiver === address)
+                    balance += transaction.amount;
             }
         }
+        return balance;
     }
 
     lastBlock() {

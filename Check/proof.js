@@ -1,9 +1,10 @@
 const crypto = require('crypto');
 
-const difficulty = 21371337;
+let DIFFICULTY = 3;
+
 const generateProof = (prevProof) => new Promise((resolve) => {
     setImmediate(async () => {
-       let proof = Math.random() * difficulty;
+       let proof = Math.random() * 2137;
        const dontMine = process.env.BREAK;
        if (isProofValid(prevProof, proof) || dontMine === 'true') {
            resolve({proof, dontMine});
@@ -20,9 +21,20 @@ const isProofValid = (prevProof, currentProof) => {
     const hashFunction = crypto.createHash('sha256');
     hashFunction.update(proofString);
     const hexString = hashFunction.digest('hex');
-    return hexString.includes('000000');
+    const difficulty = Array(DIFFICULTY+1).join('0');
+    return hexString.startsWith(difficulty);
 
+};
+
+const setDifficulty = (number) => {
+    DIFFICULTY = number;
+};
+
+const getDifficulty = () => {
+    return DIFFICULTY;
 };
 
 exports.generateProof = generateProof;
 exports.isProofValid = isProofValid;
+exports.setDifficulty = setDifficulty;
+exports.getDifficulty = getDifficulty;
