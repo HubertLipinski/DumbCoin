@@ -12,7 +12,7 @@ const ec = new EC('secp256k1');
 
 const dumbCoin = new DumbCoin(io);
 
-const PORT = 8080;
+const PORT = process.env.PORT || 8080;
 
 app.use(bodyParser.json());
 
@@ -22,11 +22,12 @@ app.get('/', (req, res) => {
 });
 
 app.post('/nodes', (req, res) => {
-    const host = req.hostname;
-    const port = http.address().port;
+    const { host, port } = req.body;
+    console.log(req.body);
+    //const port = http.address().port;
     const { callback } = req.query;
     const node = `http://${host}:${port}`;
-    const socketNode = client(node);
+    const socketNode = [client(node), dumbCoin];
     dumbCoin.addNode(socketNode, dumbCoin);
     if (callback === 'true') {
         console.info(`Added node ${node} back`);
@@ -34,16 +35,13 @@ app.post('/nodes', (req, res) => {
     } else {
         axios.post(`${node}/nodes?callback=true`, {
             host: req.hostname,
-            port: port,
+            port: PORT,
         }).then((data) => {
             console.info(`Added node ${node}`);
             res.json({ status: 'Added node' }).end();
         }).catch((error) => {
             console.info("problem: ",error);
         });
-
-        //console.info(`Added node ${node}`);
-
     }
 });
 
