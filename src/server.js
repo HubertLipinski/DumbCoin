@@ -29,6 +29,7 @@ app.post('/nodes', (req, res) => {
     const node = `http://${host}:${port}`;
     const socketNode = [client(node), dumbCoin];
     dumbCoin.addNode(socketNode, dumbCoin);
+    //check if node was connected back
     if (callback === 'true') {
         console.info(`Added node ${node} back`);
         res.json({ status: 'Added node Back' }).end();
