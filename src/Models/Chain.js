@@ -2,29 +2,30 @@ const Block = require('./Block');
 const Transaction = require('./Transaction');
 
 const { isProofValid, generateProof } = require('../Utils/proof');
+const SHA256 = require('crypto-js/sha256');
 
 class Blockchain {
-    constructor(socketIo) {
+    constructor() {
         this.blocks = [Blockchain.createGenesisBlock()];
         this.currentTransactions = [];
         this.miningReward = 50;
-        this.nodes = [];
-        this.io = socketIo;
+        this.signature = this.calculateSignature();
     }
 
     static createGenesisBlock() {
         return new Block(0,1,[],0);
     }
 
-    addNode(node) {
-        this.nodes.push(node);
-        console.log("Node list: ", this.nodes.length);
+    calculateSignature() {
+        return SHA256(this.blocks + this.currentTransactions + this.miningReward).toString();
+    }
+
+    getSignature() {
+        return this.signature;
     }
 
     mineBlock(block) {
         this.blocks.push(block);
-        console.log("[not server] Block mined: ", block.hashValue());
-        // this.io.emit('block_mined', block);
     }
 
     mineCurrentTransactions(rewardAddress) {

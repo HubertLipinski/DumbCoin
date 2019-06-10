@@ -1,30 +1,42 @@
-// const BlockChain = require('./src/Models/Chain');
-// const Transaction = require('./src/Models/Transaction');
-// const EC = require('elliptic').ec;
-// const ec = new EC('secp256k1');
+const Cluster = require('./src/Cluster');
+
+const POOL_CONFIG = {
+    address: 'http://127.0.0.1:9000',
+    port: 9000,
+    user: {
+        username: 'wallet.js',
+        private_key: null
+    }
+};
+const EC = require('elliptic').ec;
+const ec = new EC('secp256k1');
+const createSwarm = require('webrtc-swarm')
+const Signalhub = require('signalhub')
+const POOL = Signalhub('DumbCoin', [
+    'http://127.0.0.1:9000'
+])
+
+const swarm = createSwarm(POOL, {wrtc: require('wrtc')});
+
+const cluster = new Cluster(swarm.me);
+
+swarm.on('connect', (peer, id) => {
+
+    cluster.updateHostInfo(peer.address());
+    cluster.info();
+
+    peer.on('data', (data) => {
+      //
+    });
 
 
-// const myKey = ec.keyFromPrivate('265b53451b36a1562207829e2902904b93e6d8abf566216221a9d9f8a85eb353');
-// const myWalletAddress = myKey.getPublic('hex');
+})
 
-// const transaction1 = new Transaction(myWalletAddress, myWalletAddress, 10);
-// transaction1.signTransaction(myKey);
-// blockChain.addTransaction(transaction1);
-//
-// blockChain.mineCurrentTransactions(myWalletAddress);
-//
-// console.log("balance: ", blockChain.getBalanceOfAddress(myWalletAddress));
-//
-// console.log("Is ckchain valid?: ", blockChain.checkChain());
-// console.log(blockChain.getCurrentTransactions());
+swarm.on('peer', function (peer, id) {
+    console.log('connected to a new peer:', id)
 
+})
 
-
-const myKey = ec.keyFromPrivate('265b53451b36a1562207829e2902904b93e6d8abf566216221a9d9f8a85eb353');
-const myWalletAddress = myKey.getPublic('hex');
-
-const transaction1 = new Transaction(myWalletAddress, 'test-wallet', 10);
-transaction1.signTransaction(myKey);
-dumbCoin.addTransaction(transaction1);
-
-dumbCoin.mineCurrentTransactions();
+swarm.on('disconnect', (peer, id) => {
+    console.log("disconnected: ",id);
+})
