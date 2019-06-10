@@ -6,7 +6,7 @@ const STATES = {
     CREATED: 'cluster created',
     SYNC: 'sync',
     IDLE: 'idle',
-    INVALID: 'invalid'
+    INVALID: 'invalid cluster'
 };
 
 class Cluster {
@@ -33,10 +33,6 @@ class Cluster {
             console.log("disconnected: ",id);
         });
 
-    }
-
-    updateHostInfo(info) {
-        this.hostInfo = info;
     }
 
     reciveData() {
