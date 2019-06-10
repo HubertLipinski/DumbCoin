@@ -6,7 +6,7 @@ const generateProof = (prevProof) => {
        let proof = Math.random() * 2137;
        const dontMine = process.env.BREAK;
        if (isProofValid(prevProof, proof) || dontMine === 'true') {
-           return ({proof, dontMine});
+           return ({ proof, dontMine });
        } else {
            return generateProof(prevProof);
        }
@@ -33,6 +33,7 @@ const getDifficulty = () => {
     return DIFFICULTY;
 };
 
+//todo refactor this code
 exports.generateProof = generateProof;
 exports.isProofValid = isProofValid;
 exports.setDifficulty = setDifficulty;
