@@ -16,27 +16,8 @@ const POOL = Signalhub('DumbCoin', [
     'http://127.0.0.1:9000'
 ])
 
-const swarm = createSwarm(POOL, {wrtc: require('wrtc')});
+const sw = createSwarm(POOL, {wrtc: require('wrtc')});
 
-const cluster = new Cluster(swarm.me);
-
-swarm.on('connect', (peer, id) => {
-
-    cluster.updateHostInfo(peer.address());
-    cluster.info();
-
-    peer.on('data', (data) => {
-      //
-    });
+const cluster = new Cluster(sw);
 
 
-})
-
-swarm.on('peer', function (peer, id) {
-    console.log('connected to a new peer:', id)
-
-})
-
-swarm.on('disconnect', (peer, id) => {
-    console.log("disconnected: ",id);
-})
