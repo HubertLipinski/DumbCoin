@@ -1,7 +1,17 @@
 const crypto = require('crypto');
 
+/**
+ * Difficulty of the problem solving algorithm
+ * @type {number}
+ */
 let DIFFICULTY = 3;
 
+/**
+ * This function generates proof for block.
+ * Its used in mining process
+ * @param prevProof
+ * @returns {{dontMine: string, proof: number}|*}
+ */
 const generateProof = (prevProof) => {
        let proof = Math.random() * 2137;
        const dontMine = process.env.BREAK;
@@ -13,7 +23,12 @@ const generateProof = (prevProof) => {
 };
 
 
-
+/**
+ * This functions checks for valid solution. If current hash starts with DIFFICULTY amount of '0' returns true, otherwise return false
+ * @param prevProof
+ * @param currentProof
+ * @returns {boolean}
+ */
 const isProofValid = (prevProof, currentProof) => {
     const difference = currentProof - prevProof;
     const proofString = `difference-${difference}`;

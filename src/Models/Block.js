@@ -1,6 +1,22 @@
 const SHA256 = require('crypto-js/sha256');
 
+/**
+ *  This is Block class. It's crucial element of blockchain.
+ *  Blocks are being connected via hash of the previous block.
+ *  @class Block
+ */
 class Block {
+    /**
+     * @constructs
+     * Construction of the Block class
+     *
+     * @param index Id of the block
+     * @param prevHash Hash of the previous block.
+     * @param transactions Instance of Transaction class.
+     * @param prevProof Proof number of previous Block
+     *
+     * @see Transaction
+     */
     constructor(index, prevHash, transactions, prevProof) {
         this.index = index;
         this.proof = prevProof;
@@ -10,6 +26,22 @@ class Block {
         this.timestamp = Date.now();
     }
 
+    /**
+     * This function checks if the block has all valid transactions
+     * @returns {boolean}
+     */
+    hasValidTransactions() {
+        for (const transaction of this.transactions) {
+            if (!transaction.isValid())
+                return false;
+        }
+        return true;
+    }
+
+    /**
+     * This function returns hash value of Block
+     * @returns {hash}
+     */
     hashValue() {
         return SHA256(this.prevHash + this.timestamp + JSON.stringify(this.transactions)).toString();
     }
@@ -28,14 +60,6 @@ class Block {
 
     getIndex() {
         return this.index;
-    }
-
-    hasValidTransactions() {
-        for (const transaction of this.transactions) {
-            if (!transaction.isValid())
-                return false;
-        }
-        return true;
     }
 }
 
