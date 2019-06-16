@@ -2,6 +2,9 @@ const BlockChain = require('./Models/Blockchain');
 
 const SHA256 = require('crypto-js/sha256');
 
+const net = require('net');
+
+
 /**
  * States in which a cluster may be.
  * CREATED - The cluster has been created and its not synchronized with other peers in network.
@@ -30,27 +33,48 @@ class Cluster {
      * @param sw Swamp instance wich holds all information about network and it's peers
      */
     constructor(sw) {
-        this.id = sw.me;
-        this.hostInfo = null;
-        this.peer = null;
         this.blockChain = new BlockChain();
         this.state = STATES.CREATED;
         this.timestamp = Date.now();
 
         sw.on('connect', (peer) => {
+
             this.peer = peer;
             this.hostInfo = peer.address();
+            this.peerList = sw.peers;
+
+            //create chanell to recive data
+            const server = net.createServer((c) => {
+                // 'connection' listener
+                console.log('client connected');
+                c.on('end', () => {
+                    console.log('client disconnected');
+                });
+                c.write('hello\r\n');
+                c.pipe(c);
+            });
+
+            server.listen({
+                port: this.hostInfo.port,
+                host: this.hostInfo.address,
+                exclusive: true
+            });
             this.reciveData();
-            peer.send(JSON.stringify({test:true}))
+
+            // setInterval(()=>{
+            //     this.synchronizeData();
+            // },1000);
+
         });
 
-        sw.on('peer', function (peer, id) {
+        sw.on('peer', (peer, id) => {
             console.log('Im now connected to a new peer:', id)
         });
 
         sw.on('disconnect', (peer, id) => {
             console.log("disconnected: ",id);
         });
+
 
     }
 
@@ -60,8 +84,53 @@ class Cluster {
         });
     }
 
+    /**
+     * This function iterates over all peers in list and takes their network information
+     * @returns {Array | null} Returns array of objects - only other hosts in network (current cluster data excluded)
+     */
+    getNetworkData() {
+        if (this.peerList) {
+            let connectedPeers = [];
+            for (let index = 0; index < this.peerList.length; index++) {
+                const peer = this.peerList[index];
+                connectedPeers.push({
+                        port: peer.remotePort,
+                        family: peer.remoteFamily,
+                        address: peer.remoteAddress
+                    }
+                );
+            }
+            return connectedPeers;
+        }
+        return null;
+    }
+
+    synchronizeData() {
+        let data = this.getNetworkData();
+        //todo get the random id between 0 and data.length
+        console.log("data 0;",data[0]);
+
+        const client = net.createConnection({
+                port: data[0].port,
+                host: data[0].address
+            },
+            () => {
+            // 'connect' listener
+            console.log('connected to server!');
+            client.write('world!\r\n');
+        });
+        client.on('data', (data) => {
+            console.log("received data: ",data.toString());
+            client.end();
+        });
+        client.on('end', () => {
+            console.log('disconnected from server');
+        });
+
+    }
+
     info() {
-        console.log(this);
+        console.log(this.sw.peers);
     }
 
 }

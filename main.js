@@ -20,4 +20,7 @@ const sw = createSwarm(POOL, {wrtc: require('wrtc')});
 
 const cluster = new Cluster(sw);
 
+cluster.getNetworkData();
+
+
 
