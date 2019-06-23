@@ -1,8 +1,7 @@
 const BlockChain = require('./Models/Blockchain');
+const Networker = require('./Models/Networker.js');
 
-const net = require('net'),
-      nssocket = require('nssocket'),
-      io = require('socket.io-client');
+const net = require('net');
 
 /**
  * States in which a cluster may be.
@@ -32,14 +31,31 @@ class Cluster {
      * This is the Cluster constructor
      */
     constructor() {
-        this.id = null;
         this.blockChain = new BlockChain();
         this.state = STATES.CREATED;
         this.timestamp = Date.now();
 
-        //test only
-        const socket = io('http://127.0.0.1:3000');
+        this.networker = new Networker(
+            this.blockChain
+        );
+        this.networker.createServer();
 
+        setTimeout(()=>{
+            // console.log("networker peer list: ",this.networker.getPeerList());
+            let list = this.networker.getPeerList();
+            if(list.size > 0) {
+                let port = list.get(0)[1];
+                let ip = list.get(0)[0];
+                this.networker.gossipWithPeer(port,ip)
+            }
+        },3000);
+
+
+
+    }
+
+    gossip() {
+        //
     }
 
 

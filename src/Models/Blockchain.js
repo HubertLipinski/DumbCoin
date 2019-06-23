@@ -20,6 +20,7 @@ class Blockchain {
         this.currentTransactions = [];
         this.miningReward = 50;
         this.signature = this.calculateSignature();
+        this.timestamp = Date.now();
     }
 
     /**
@@ -35,7 +36,7 @@ class Blockchain {
      * @returns {hash}
      */
     calculateSignature() {
-        return SHA256(this.blocks + this.currentTransactions + this.miningReward).toString();
+        return SHA256(this.blocks + this.currentTransactions + this.miningReward + this.timestamp).toString();
     }
 
     getSignature() {
@@ -48,6 +49,7 @@ class Blockchain {
      */
     mineBlock(block) {
         this.blocks.push(block);
+        this.signature = this.calculateSignature();
     }
 
     /**
@@ -72,6 +74,7 @@ class Blockchain {
                     ];
                 }
             }
+        this.signature = this.calculateSignature();
     }
 
     /**
@@ -89,6 +92,7 @@ class Blockchain {
             throw new Error('Cannot add invalid transaction!');
 
         this.currentTransactions.push(transaction);
+        this.signature = this.calculateSignature();
     }
 
     getCurrentTransactions() {
