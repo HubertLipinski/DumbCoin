@@ -41,14 +41,27 @@ class Cluster {
         this.networker.createServer();
 
         setTimeout(()=>{
+
             // console.log("networker peer list: ",this.networker.getPeerList());
-            let list = this.networker.getPeerList();
+            let list = this.networker.allPeers;
             if(list.size > 0) {
+
+                // this.blockChain.fakeBlock();
+                // this.blockChain.fakeBlock();
+                // this.blockChain.fakeBlock();
+
                 let port = list.get(0)[1];
                 let ip = list.get(0)[0];
-                this.networker.gossipWithPeer(port,ip)
+                this.networker.gossipWithPeer(port,ip);
+
+                this.state = STATES.SYNC;
             }
-        },3000);
+        },1000);
+
+        setTimeout(()=>{
+            console.log("----------------------------------------------");
+           // console.log(this.blockChain.getChain());
+        },15000);
 
 
 

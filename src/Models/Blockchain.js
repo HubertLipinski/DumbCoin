@@ -52,6 +52,20 @@ class Blockchain {
         this.signature = this.calculateSignature();
     }
 
+    fakeBlock(){
+        const prevBlock = this.lastBlock();
+
+        let block = new Block (
+            Math.round((Math.random()*10 + prevBlock.getIndex()+ 1)),
+            prevBlock.hashValue(),
+            this.currentTransactions,
+        );
+        block.setProof(112.333);
+        this.blocks.push(block);
+
+        this.signature = this.calculateSignature();
+    }
+
     /**
      * This function is my implementation of 'mining'.
      * It takes the currentTransactions and 'mine it' using prof.js utility
@@ -125,6 +139,10 @@ class Blockchain {
         return this.blocks;
     }
 
+    getBlock(index) {
+        return this.blocks[index];
+    }
+
     /**
      * This function check the validity of the blockchain.
      * It check if all the blocks are valid and also checks their transaction
@@ -146,6 +164,10 @@ class Blockchain {
 
         }
         return true;
+    }
+
+    get listOfId() {
+        return this.blocks.map(index => index.index);
     }
 }
 

@@ -1,29 +1,53 @@
 //signaling server helpers
 
-const SYN = (blockChain) => {
+const SYN = (blockChain, dataToSync) => {
     return jsonEncodeObj(
         {
             syn: true,
             ack: false,
             ack2: false,
+            isValid: blockChain.checkChain(),
             signature: blockChain.signature,
-            blocks: blockChain.blocks,
-            currentTransactions: blockChain.currentTransactions
+            payload: dataToSync,
         }
     )
 };
 
-const ACK = (blockChain, second=false) => {
+const ACK = (blockChain, dataToSync, second=false) => {
     return jsonEncodeObj(
         {
             syn: false,
             ack: !second,
             ack2: second,
+            isValid: blockChain.checkChain(),
             signature: blockChain.signature,
-            blocks: blockChain.blocks,
-            currentTransactions: blockChain.currentTransactions
+            payload: dataToSync,
         }
     )
+};
+
+const prepareSYN = (blockChain) => {
+    let dataToSync = [];
+    for (let block of blockChain.blocks) {
+        dataToSync.push(
+            {
+                index: block.index,
+                timestamp: block.timestamp,
+                data: extractDataFromBlock(block)
+            }
+        )
+    }
+    return dataToSync;
+};
+
+const extractDataFromBlock = (Block) => {
+    return {
+        'proof': Block.proof,
+        'transactions': Block.transactions,
+        'hash': Block.hash,
+        'prevHash': Block.prevHash,
+        'timestamp': Block.timestamp
+    }
 };
 
 const prepareNetworkMapData = (data) => {
@@ -48,5 +72,7 @@ module.exports = {
     prepareNetworkMapData,
     decodeNetworkMapData,
     SYN,
-    ACK
+    ACK,
+    prepareSYN
+
 };
