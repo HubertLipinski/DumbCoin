@@ -46,10 +46,6 @@ class Cluster {
             let list = this.networker.allPeers;
             if(list.size > 0) {
 
-                // this.blockChain.fakeBlock();
-                // this.blockChain.fakeBlock();
-                // this.blockChain.fakeBlock();
-
                 let port = list.get(0)[1];
                 let ip = list.get(0)[0];
                 this.networker.gossipWithPeer(port,ip);
@@ -60,7 +56,7 @@ class Cluster {
 
         setTimeout(()=>{
             console.log("----------------------------------------------");
-           // console.log(this.blockChain.getChain());
+           console.log(this.blockChain.getChain());
         },15000);
 
 

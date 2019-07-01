@@ -1,5 +1,3 @@
-//signaling server helpers
-
 const SYN = (blockChain, dataToSync) => {
     return jsonEncodeObj(
         {
@@ -37,6 +35,7 @@ const prepareSYN = (blockChain) => {
             }
         )
     }
+
     return dataToSync;
 };
 
@@ -74,5 +73,4 @@ module.exports = {
     SYN,
     ACK,
     prepareSYN
-
 };

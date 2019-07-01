@@ -66,6 +66,13 @@ class Blockchain {
         this.signature = this.calculateSignature();
     }
 
+    insertReceivedBlock(index, blockInfo) {
+        let block = new Block(index, blockInfo.prevHash, blockInfo.transactions, blockInfo.proof);
+        block.timestamp = blockInfo.timestamp;
+        this.blocks.push(block);
+        this.signature = this.calculateSignature();
+    }
+
     /**
      * This function is my implementation of 'mining'.
      * It takes the currentTransactions and 'mine it' using prof.js utility
@@ -140,7 +147,10 @@ class Blockchain {
     }
 
     getBlock(index) {
-        return this.blocks[index];
+        const wantedBlock = this.blocks.filter(block => {
+            return block.index === index;
+        });
+        return wantedBlock[0];
     }
 
     /**
