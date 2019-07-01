@@ -48,8 +48,9 @@ const getDifficulty = () => {
     return DIFFICULTY;
 };
 
-//todo refactor this code
-exports.generateProof = generateProof;
-exports.isProofValid = isProofValid;
-exports.setDifficulty = setDifficulty;
-exports.getDifficulty = getDifficulty;
+module.exports = {
+    generateProof,
+    isProofValid,
+    setDifficulty,
+    getDifficulty
+};

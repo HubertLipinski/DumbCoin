@@ -1,6 +1,7 @@
 const BlockChain = require('./Models/Blockchain');
+const Networker = require('./Models/Networker.js');
 
-const SHA256 = require('crypto-js/sha256');
+const net = require('net');
 
 /**
  * States in which a cluster may be.
@@ -17,6 +18,7 @@ const STATES = {
     INVALID: 'invalid cluster'
 };
 
+
 /**
  * This class is my representation of User in peer to peer network.
  * Every user starts with its own copy of blockchain wich must be synchronized beetwen other peers in network - using my own implementation of gossip protocol
@@ -27,42 +29,44 @@ const STATES = {
 class Cluster {
     /**
      * This is the Cluster constructor
-     * @param sw Swamp instance wich holds all information about network and it's peers
      */
-    constructor(sw) {
-        this.id = sw.me;
-        this.hostInfo = null;
-        this.peer = null;
+    constructor() {
         this.blockChain = new BlockChain();
         this.state = STATES.CREATED;
         this.timestamp = Date.now();
 
-        sw.on('connect', (peer) => {
-            this.peer = peer;
-            this.hostInfo = peer.address();
-            this.reciveData();
-            peer.send(JSON.stringify({test:true}))
-        });
+        this.networker = new Networker(
+            this.blockChain
+        );
+        this.networker.createServer();
 
-        sw.on('peer', function (peer, id) {
-            console.log('Im now connected to a new peer:', id)
-        });
+        setTimeout(()=>{
 
-        sw.on('disconnect', (peer, id) => {
-            console.log("disconnected: ",id);
-        });
+            // console.log("networker peer list: ",this.networker.getPeerList());
+            let list = this.networker.allPeers;
+            if(list.size > 0) {
+
+                let port = list.get(0)[1];
+                let ip = list.get(0)[0];
+                this.networker.gossipWithPeer(port,ip);
+
+                this.state = STATES.SYNC;
+            }
+        },1000);
+
+        setTimeout(()=>{
+            console.log("----------------------------------------------");
+           console.log(this.blockChain.getChain());
+        },15000);
+
+
 
     }
 
-    reciveData() {
-        this.peer.on('data', (data) => {
-            console.log(data)
-        });
+    gossip() {
+        //
     }
 
-    info() {
-        console.log(this);
-    }
 
 }
 

@@ -38,6 +38,14 @@ class Block {
         return true;
     }
 
+    update(data) {
+        this.proof = data.proof;
+        this.transactions = data.transactions;
+        this.hash = data.hash;
+        this.prevHash = data.prevHash;
+        this.timestamp = data.timestamp;
+    }
+
     /**
      * This function returns hash value of Block
      * @returns {hash}

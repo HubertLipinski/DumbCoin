@@ -20,6 +20,7 @@ class Blockchain {
         this.currentTransactions = [];
         this.miningReward = 50;
         this.signature = this.calculateSignature();
+        this.timestamp = Date.now();
     }
 
     /**
@@ -35,7 +36,7 @@ class Blockchain {
      * @returns {hash}
      */
     calculateSignature() {
-        return SHA256(this.blocks + this.currentTransactions + this.miningReward).toString();
+        return SHA256(this.blocks + this.currentTransactions + this.miningReward + this.timestamp).toString();
     }
 
     getSignature() {
@@ -48,6 +49,28 @@ class Blockchain {
      */
     mineBlock(block) {
         this.blocks.push(block);
+        this.signature = this.calculateSignature();
+    }
+
+    fakeBlock(){
+        const prevBlock = this.lastBlock();
+
+        let block = new Block (
+            Math.round((Math.random()*10 + prevBlock.getIndex()+ 1)),
+            prevBlock.hashValue(),
+            this.currentTransactions,
+        );
+        block.setProof(112.333);
+        this.blocks.push(block);
+
+        this.signature = this.calculateSignature();
+    }
+
+    insertReceivedBlock(index, blockInfo) {
+        let block = new Block(index, blockInfo.prevHash, blockInfo.transactions, blockInfo.proof);
+        block.timestamp = blockInfo.timestamp;
+        this.blocks.push(block);
+        this.signature = this.calculateSignature();
     }
 
     /**
@@ -72,6 +95,7 @@ class Blockchain {
                     ];
                 }
             }
+        this.signature = this.calculateSignature();
     }
 
     /**
@@ -89,6 +113,7 @@ class Blockchain {
             throw new Error('Cannot add invalid transaction!');
 
         this.currentTransactions.push(transaction);
+        this.signature = this.calculateSignature();
     }
 
     getCurrentTransactions() {
@@ -121,6 +146,13 @@ class Blockchain {
         return this.blocks;
     }
 
+    getBlock(index) {
+        const wantedBlock = this.blocks.filter(block => {
+            return block.index === index;
+        });
+        return wantedBlock[0];
+    }
+
     /**
      * This function check the validity of the blockchain.
      * It check if all the blocks are valid and also checks their transaction
@@ -142,6 +174,10 @@ class Blockchain {
 
         }
         return true;
+    }
+
+    get listOfId() {
+        return this.blocks.map(index => index.index);
     }
 }
 
