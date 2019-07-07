@@ -11,12 +11,13 @@ const net = require('net');
 const { logger } = require('../Utils/logger.js');
 
 class Networker {
-constructor(blockchain, ip='127.0.0.1', port=31198, name='dumbCoinNetworker') {
+constructor(blockchain, ip='127.0.0.1', port=3001, name='dumbCoinNetworker') {
 
         let test = 1;
 
         this.ip = ip;
         this.port = port;
+        this.connected = false;
         this.name = name;
         this.peerList = null;
         this.blockchain = blockchain;
@@ -25,22 +26,25 @@ constructor(blockchain, ip='127.0.0.1', port=31198, name='dumbCoinNetworker') {
 
         if(test === 1) {
             setTimeout(()=>{
-                this.blockchain.fakeBlock();
+                // this.blockchain.fakeBlock();
                 logger.silly(`${JSON.stringify(this.blockchain.getChain())}`);
-
-            },1000)
+                // throw new Error("eee");
+            },3000)
         }
-
     }
 
-    signal() {
+    signal(isConnected = true) {
         //connect to signaling server, send own data get list of all users in pool
+        this.connected = isConnected;
         const signal = new net.Socket();
         signal.connect(3500, '127.0.0.1', () => {
+
             logger.log('debug', `connected to signaling server`);
+
             signal.end(this.networkingInfo, () => {
                 logger.log('verbose', `Sent my own data to signaling server `);
             });
+
         });
 
         signal.on('data', (buffer) => {
@@ -63,8 +67,8 @@ constructor(blockchain, ip='127.0.0.1', port=31198, name='dumbCoinNetworker') {
     }
 
     createServer() {
-        const server = net.createServer((socket) => {
-
+        this.server = net.createServer((socket) => {
+            this.connected = true;
             socket.on('error', (error) => {
                 logger.log('error', 'client ' + error);
             });
@@ -79,11 +83,11 @@ constructor(blockchain, ip='127.0.0.1', port=31198, name='dumbCoinNetworker') {
                     if (ackPacket) {
                         socket.write(ACK(this.blockchain, ackPacket));
                     } else {
-                        socket.end(
-                            jsonEncodeObj({
-                                    msg: "No changes in blockchain, aborting sync"
-                            })
-                        );
+                        // socket.end(
+                        //     jsonEncodeObj({
+                        //             msg: "No changes in blockchain, aborting sync"
+                        //     })
+                        // );
                     }
                 } else if (data.ack2) {
 
@@ -117,8 +121,29 @@ constructor(blockchain, ip='127.0.0.1', port=31198, name='dumbCoinNetworker') {
                 logger.log('verbose', 'Socked closed.');
             });
 
-        }).listen(this.port, this.ip);
+        })
+            .on('error', (error) => {
+                this.disconnect();
+                logger.log('error', `Error while starting server ${error}`);
+            })
+            .on('close', () => {
+                this.disconnect()
+                    .then((msg) => {
+                        logger.log('warn', `My server closed!`);
+                    })
+                    .catch((error) => {
+                        logger.log('error', `Error while disconnecting from server, aborting...` + error);
+                    });
+
+            })
+            .listen(this.port, this.ip);
         logger.log('info', `Started server on port ${this.port}`);
+
+
+        setTimeout(()=>{
+            this.server.close();
+        }, 10000)
+
     }
 
     //A
@@ -200,7 +225,7 @@ constructor(blockchain, ip='127.0.0.1', port=31198, name='dumbCoinNetworker') {
             });
 
         } else {
-            logger.log('warn', `No changes in blockchain, aborting sync`);
+            logger.log('info', `No changes in blockchain, aborting sync`);
             return false;
         }
 
@@ -263,6 +288,7 @@ constructor(blockchain, ip='127.0.0.1', port=31198, name='dumbCoinNetworker') {
 
     get networkingInfo() {
         return jsonEncodeObj({
+                'connected' : this.connected,
                 'ip': this.ip,
                 'port': this.port,
                 'name': this.name
@@ -283,6 +309,19 @@ constructor(blockchain, ip='127.0.0.1', port=31198, name='dumbCoinNetworker') {
             };
     }
 
+    disconnect() {
+        const self = this;
+        return new Promise(function(resolve, reject) {
+            logger.info('disconnecting...');
+            self.connected = false;
+            self.signal(false);
+            //silly
+            setInterval(()=>{
+                resolve('Disconnected from server');
+            },1000)
+
+        });
+    }
 }
 
 module.exports = Networker;
