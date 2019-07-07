@@ -1,6 +1,5 @@
 const SYN = (blockChain, dataToSync) => {
-    return jsonEncodeObj(
-        {
+    return jsonEncodeObj({
             syn: true,
             ack: false,
             ack2: false,
@@ -12,8 +11,7 @@ const SYN = (blockChain, dataToSync) => {
 };
 
 const ACK = (blockChain, dataToSync, second=false) => {
-    return jsonEncodeObj(
-        {
+    return jsonEncodeObj({
             syn: false,
             ack: !second,
             ack2: second,
@@ -27,8 +25,7 @@ const ACK = (blockChain, dataToSync, second=false) => {
 const prepareSYN = (blockChain) => {
     let dataToSync = [];
     for (let block of blockChain.blocks) {
-        dataToSync.push(
-            {
+        dataToSync.push({
                 index: block.index,
                 timestamp: block.timestamp,
                 data: extractDataFromBlock(block)

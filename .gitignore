@@ -1,3 +1,6 @@
 .idea
 node_modules/
-.snyk
+/.snyk
+.env
+/src/Log/*
+*log*

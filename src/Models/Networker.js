@@ -8,13 +8,12 @@ const {
 } = require('../Utils/networking');
 
 const net = require('net');
+const { logger } = require('../Utils/logger.js');
 
 class Networker {
+constructor(blockchain, ip='127.0.0.1', port=31198, name='dumbCoinNetworker') {
 
-
-    constructor(blockchain, ip='127.0.0.1', port=33183, name='dumbCoinNetworker') {
-
-        let test = 0;
+        let test = 1;
 
         this.ip = ip;
         this.port = port;
@@ -27,9 +26,8 @@ class Networker {
         if(test === 1) {
             setTimeout(()=>{
                 this.blockchain.fakeBlock();
-                console.log(this.blockchain.getChain());
+                logger.silly(`${JSON.stringify(this.blockchain.getChain())}`);
 
-                // this.gossipWithPeer(3001, '127.0.0.1');
             },1000)
         }
 
@@ -39,27 +37,27 @@ class Networker {
         //connect to signaling server, send own data get list of all users in pool
         const signal = new net.Socket();
         signal.connect(3500, '127.0.0.1', () => {
-            console.log('connected to signaling server');
+            logger.log('debug', `connected to signaling server`);
             signal.end(this.networkingInfo, () => {
-                // console.log('transfered data');
+                logger.log('verbose', `Sent my own data to signaling server `);
             });
         });
 
         signal.on('data', (buffer) => {
             this.peerList = decodeNetworkMapData(buffer);
-            // console.log("networker peer list: ",this.peerList);
         });
 
         signal.on('close', () => {
-            console.log('connection closed.');
+            logger.log('verbose', `Signaling server connection closed`);
         });
 
         signal.on('error', (error)=>{
-            console.log("client error: ", error);
+            logger.log('error', 'client ' + error);
+
         });
 
         signal.on('end', () => {
-            console.log('ended signal');
+            logger.log('verbose', 'Connection ended');
         })
 
     }
@@ -67,8 +65,8 @@ class Networker {
     createServer() {
         const server = net.createServer((socket) => {
 
-            socket.on('error', (err) => {
-                console.log("client error: ", err);
+            socket.on('error', (error) => {
+                logger.log('error', 'client ' + error);
             });
 
             //B
@@ -77,12 +75,16 @@ class Networker {
                 let data = jsonDecodeObj(obj);
                 if(data.syn) {
 
-                    console.log("packet", this.checkSYNandPrepareACK(data));
                     let ackPacket = this.checkSYNandPrepareACK(data);
-                    if (ackPacket)
+                    if (ackPacket) {
                         socket.write(ACK(this.blockchain, ackPacket));
-                    else socket.end();
-
+                    } else {
+                        socket.end(
+                            jsonEncodeObj({
+                                    msg: "No changes in blockchain, aborting sync"
+                            })
+                        );
+                    }
                 } else if (data.ack2) {
 
                     let myIds = this.blockchain.listOfId;
@@ -112,11 +114,11 @@ class Networker {
             });
 
             socket.on('close', () => {
-                console.log('SOCKET CLOSED');
+                logger.log('verbose', 'Socked closed.');
             });
 
         }).listen(this.port, this.ip);
-        console.log("im listening at port: ", this.port);
+        logger.log('info', `Started server on port ${this.port}`);
     }
 
     //A
@@ -127,30 +129,34 @@ class Networker {
 
             let dataToSync = prepareSYN(this.blockchain);
 
-            if (!this.blockchain.checkChain())
+            if (!this.blockchain.checkChain()) {
+                logger.log('error', "You can\'t manipulate blockchain\'s data!");
+                payload.end();
                 throw new Error("You can't manipulate blockchain's data!");
+            }
 
             payload.write(SYN(this.blockchain, dataToSync));
 
             payload.on('data', (obj) => {
                let data = jsonDecodeObj(obj);
-
                if (data.ack) {
                    const ackPayload = this.checkACKandPrepareACK2(data);
                    payload.write(ACK(this.blockchain, ackPayload, true));
+               } else if (data.msg) {
+                   logger.log('info', `${data.msg}`);
                }
             });
 
             payload.on('drain', () => {
-                console.log('data was darined while wtiring!');
+                logger.log('error', `data was darined`);
             });
 
             payload.on('error', () => {
-                console.log('Error while exanging data');
+                logger.log('error', `Error while exanging data`);
             });
 
             payload.on('end', () => {
-                console.log('ended connection', );
+                logger.log('verbose', `Connection Ended`);
             });
         });
     }
@@ -159,7 +165,7 @@ class Networker {
 
         let ackPayload;
         if ((this.blockchain.signature !== data.signature)) {
-            console.log("Given blockchain signature is diffrent, checking for changes");
+            logger.log('info', `Given blockchain signature is diffrent, checking for changes`);
 
             ackPayload = data.payload.map(item => {
 
@@ -189,13 +195,12 @@ class Networker {
             uniqueIds.forEach(id => {
               if(payloadIds.indexOf(id) < 0) {
                   const missingBlock = this.getMissingBlock(id);
-                  // console.log(this.getMissingBlock(id));
                   ackPayload.push(missingBlock);
               }
             });
 
         } else {
-            console.log("No changes in blockchain, aborting sync");
+            logger.log('warn', `No changes in blockchain, aborting sync`);
             return false;
         }
 
@@ -232,8 +237,6 @@ class Networker {
 
             return container;
         });
-
-        console.log('ack 2 payload ',ack2Payload);
 
         return ack2Payload;
     }
