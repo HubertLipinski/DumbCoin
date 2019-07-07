@@ -8,11 +8,10 @@ const {
 } = require('../Utils/networking');
 
 const net = require('net');
+const { logger } = require('../Utils/logger.js');
 
 class Networker {
-
-
-    constructor(blockchain, ip='127.0.0.1', port=33183, name='dumbCoinNetworker') {
+constructor(blockchain, ip='127.0.0.1', port=32093, name='dumbCoinNetworker') {
 
         let test = 0;
 
@@ -39,7 +38,7 @@ class Networker {
         //connect to signaling server, send own data get list of all users in pool
         const signal = new net.Socket();
         signal.connect(3500, '127.0.0.1', () => {
-            console.log('connected to signaling server');
+            logger.log('debug', `connected to signaling server`);
             signal.end(this.networkingInfo, () => {
                 // console.log('transfered data');
             });
@@ -47,19 +46,19 @@ class Networker {
 
         signal.on('data', (buffer) => {
             this.peerList = decodeNetworkMapData(buffer);
-            // console.log("networker peer list: ",this.peerList);
         });
 
         signal.on('close', () => {
-            console.log('connection closed.');
+            logger.log('debug', `Signaling server connection closed`);
         });
 
         signal.on('error', (error)=>{
-            console.log("client error: ", error);
+            logger.log('error', 'client error: '+error);
+
         });
 
         signal.on('end', () => {
-            console.log('ended signal');
+            logger.log('debug', 'Connection ended');
         })
 
     }
@@ -68,7 +67,7 @@ class Networker {
         const server = net.createServer((socket) => {
 
             socket.on('error', (err) => {
-                console.log("client error: ", err);
+                logger.log('error', 'client error: '+err);
             });
 
             //B
@@ -77,12 +76,16 @@ class Networker {
                 let data = jsonDecodeObj(obj);
                 if(data.syn) {
 
-                    console.log("packet", this.checkSYNandPrepareACK(data));
                     let ackPacket = this.checkSYNandPrepareACK(data);
-                    if (ackPacket)
+                    if (ackPacket) {
                         socket.write(ACK(this.blockchain, ackPacket));
-                    else socket.end();
-
+                    } else {
+                        socket.end(
+                            jsonEncodeObj({
+                                    msg: "No changes in blockchain, aborting sync"
+                            })
+                        );
+                    }
                 } else if (data.ack2) {
 
                     let myIds = this.blockchain.listOfId;
@@ -112,11 +115,11 @@ class Networker {
             });
 
             socket.on('close', () => {
-                console.log('SOCKET CLOSED');
+                logger.log('info', 'Socked closed.');
             });
 
         }).listen(this.port, this.ip);
-        console.log("im listening at port: ", this.port);
+        logger.log('info', `Started server on port ${this.port}`);
     }
 
     //A
@@ -134,15 +137,16 @@ class Networker {
 
             payload.on('data', (obj) => {
                let data = jsonDecodeObj(obj);
-
                if (data.ack) {
                    const ackPayload = this.checkACKandPrepareACK2(data);
                    payload.write(ACK(this.blockchain, ackPayload, true));
+               } else if (data.msg) {
+                   console.log(data.msg);
                }
             });
 
             payload.on('drain', () => {
-                console.log('data was darined while wtiring!');
+                console.log('data was darined');
             });
 
             payload.on('error', () => {
@@ -150,7 +154,7 @@ class Networker {
             });
 
             payload.on('end', () => {
-                console.log('ended connection', );
+                console.log('ended connection');
             });
         });
     }
