@@ -21,7 +21,7 @@
     "moment": "^2.24.0",
     "nssocket": "^0.6.0",
     "signalhub": "^4.9.0",
-    "snyk": "^1.174.1",
+    "snyk": "^1.192.3",
     "socket.io": "^2.2.0",
     "socket.io-client": "^2.2.0",
     "vs-stun": "0.0.7",
