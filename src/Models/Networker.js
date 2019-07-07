@@ -11,9 +11,9 @@ const net = require('net');
 const { logger } = require('../Utils/logger.js');
 
 class Networker {
-constructor(blockchain, ip='127.0.0.1', port=32093, name='dumbCoinNetworker') {
+constructor(blockchain, ip='127.0.0.1', port=31198, name='dumbCoinNetworker') {
 
-        let test = 0;
+        let test = 1;
 
         this.ip = ip;
         this.port = port;
@@ -26,9 +26,8 @@ constructor(blockchain, ip='127.0.0.1', port=32093, name='dumbCoinNetworker') {
         if(test === 1) {
             setTimeout(()=>{
                 this.blockchain.fakeBlock();
-                console.log(this.blockchain.getChain());
+                logger.silly(`${JSON.stringify(this.blockchain.getChain())}`);
 
-                // this.gossipWithPeer(3001, '127.0.0.1');
             },1000)
         }
 
@@ -40,7 +39,7 @@ constructor(blockchain, ip='127.0.0.1', port=32093, name='dumbCoinNetworker') {
         signal.connect(3500, '127.0.0.1', () => {
             logger.log('debug', `connected to signaling server`);
             signal.end(this.networkingInfo, () => {
-                // console.log('transfered data');
+                logger.log('verbose', `Sent my own data to signaling server `);
             });
         });
 
@@ -49,16 +48,16 @@ constructor(blockchain, ip='127.0.0.1', port=32093, name='dumbCoinNetworker') {
         });
 
         signal.on('close', () => {
-            logger.log('debug', `Signaling server connection closed`);
+            logger.log('verbose', `Signaling server connection closed`);
         });
 
         signal.on('error', (error)=>{
-            logger.log('error', 'client error: '+error);
+            logger.log('error', 'client ' + error);
 
         });
 
         signal.on('end', () => {
-            logger.log('debug', 'Connection ended');
+            logger.log('verbose', 'Connection ended');
         })
 
     }
@@ -66,8 +65,8 @@ constructor(blockchain, ip='127.0.0.1', port=32093, name='dumbCoinNetworker') {
     createServer() {
         const server = net.createServer((socket) => {
 
-            socket.on('error', (err) => {
-                logger.log('error', 'client error: '+err);
+            socket.on('error', (error) => {
+                logger.log('error', 'client ' + error);
             });
 
             //B
@@ -115,7 +114,7 @@ constructor(blockchain, ip='127.0.0.1', port=32093, name='dumbCoinNetworker') {
             });
 
             socket.on('close', () => {
-                logger.log('info', 'Socked closed.');
+                logger.log('verbose', 'Socked closed.');
             });
 
         }).listen(this.port, this.ip);
@@ -130,8 +129,11 @@ constructor(blockchain, ip='127.0.0.1', port=32093, name='dumbCoinNetworker') {
 
             let dataToSync = prepareSYN(this.blockchain);
 
-            if (!this.blockchain.checkChain())
+            if (!this.blockchain.checkChain()) {
+                logger.log('error', "You can\'t manipulate blockchain\'s data!");
+                payload.end();
                 throw new Error("You can't manipulate blockchain's data!");
+            }
 
             payload.write(SYN(this.blockchain, dataToSync));
 
@@ -141,20 +143,20 @@ constructor(blockchain, ip='127.0.0.1', port=32093, name='dumbCoinNetworker') {
                    const ackPayload = this.checkACKandPrepareACK2(data);
                    payload.write(ACK(this.blockchain, ackPayload, true));
                } else if (data.msg) {
-                   console.log(data.msg);
+                   logger.log('info', `${data.msg}`);
                }
             });
 
             payload.on('drain', () => {
-                console.log('data was darined');
+                logger.log('error', `data was darined`);
             });
 
             payload.on('error', () => {
-                console.log('Error while exanging data');
+                logger.log('error', `Error while exanging data`);
             });
 
             payload.on('end', () => {
-                console.log('ended connection');
+                logger.log('verbose', `Connection Ended`);
             });
         });
     }
@@ -163,7 +165,7 @@ constructor(blockchain, ip='127.0.0.1', port=32093, name='dumbCoinNetworker') {
 
         let ackPayload;
         if ((this.blockchain.signature !== data.signature)) {
-            console.log("Given blockchain signature is diffrent, checking for changes");
+            logger.log('info', `Given blockchain signature is diffrent, checking for changes`);
 
             ackPayload = data.payload.map(item => {
 
@@ -193,13 +195,12 @@ constructor(blockchain, ip='127.0.0.1', port=32093, name='dumbCoinNetworker') {
             uniqueIds.forEach(id => {
               if(payloadIds.indexOf(id) < 0) {
                   const missingBlock = this.getMissingBlock(id);
-                  // console.log(this.getMissingBlock(id));
                   ackPayload.push(missingBlock);
               }
             });
 
         } else {
-            console.log("No changes in blockchain, aborting sync");
+            logger.log('warn', `No changes in blockchain, aborting sync`);
             return false;
         }
 
@@ -236,8 +237,6 @@ constructor(blockchain, ip='127.0.0.1', port=32093, name='dumbCoinNetworker') {
 
             return container;
         });
-
-        console.log('ack 2 payload ',ack2Payload);
 
         return ack2Payload;
     }

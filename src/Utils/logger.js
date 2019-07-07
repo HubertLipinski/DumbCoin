@@ -9,12 +9,12 @@ const transport = new (winston.transports.DailyRotateFile)({
     filename: './src/Log/application-%DATE%.log',
     datePattern: 'YYYY-MM-DD-HH',
     zippedArchive: true,
-    maxSize: '100m',
+    maxSize: '100M',
     maxFiles: '21d'
 });
 
 const date = new Date();
-let timestamp = date.toLocaleString();
+const timestamp = date.toLocaleString();
 
 const logger = winston.createLogger({
     // levels: winston.config.npm.levels,
@@ -26,8 +26,8 @@ const logger = winston.createLogger({
         new (winston.transports.Console)({
             level: process.env.LOG_LEVEL || 'info',
             format: winston.format.combine(
+                winston.format.printf(info => `[ ${info.level} ] ${info.message}`),
                 winston.format.colorize( {all: true}),
-                winston.format.simple(),
             ),
         }),
         transport,
