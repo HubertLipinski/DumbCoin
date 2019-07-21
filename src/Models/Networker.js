@@ -1,3 +1,6 @@
+const net = require('net');
+const config = require('../Utils/config');
+const { logger } = require('../Utils/logger.js');
 const {
     jsonEncodeObj,
     jsonDecodeObj,
@@ -7,11 +10,14 @@ const {
     prepareSYN
 } = require('../Utils/networking');
 
-const net = require('net');
-const { logger } = require('../Utils/logger.js');
 
 class Networker {
-constructor(blockchain, ip='127.0.0.1', port=3001, name='dumbCoinNetworker') {
+    constructor(
+        blockchain,
+        ip = config.IP,
+        port = config.PORT,
+        name = config.NAME)
+    {
 
         let test = 1;
 
@@ -82,12 +88,6 @@ constructor(blockchain, ip='127.0.0.1', port=3001, name='dumbCoinNetworker') {
                     let ackPacket = this.checkSYNandPrepareACK(data);
                     if (ackPacket) {
                         socket.write(ACK(this.blockchain, ackPacket));
-                    } else {
-                        // socket.end(
-                        //     jsonEncodeObj({
-                        //             msg: "No changes in blockchain, aborting sync"
-                        //     })
-                        // );
                     }
                 } else if (data.ack2) {
 
@@ -134,7 +134,7 @@ constructor(blockchain, ip='127.0.0.1', port=3001, name='dumbCoinNetworker') {
                     .catch((error) => {
                         logger.log('error', `Error while disconnecting from server, aborting...` + error);
                     });
-
+                logger.log('warn', `My server closed!`);
             })
             .listen(this.port, this.ip);
         logger.log('info', `Started server on port ${this.port}`);
