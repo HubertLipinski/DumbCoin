@@ -1,6 +1,7 @@
 const net = require('net');
 
 const { prepareNetworkMapData, jsonDecodeObj } = require('./src/Utils/networking');
+const { logger } = require('./src/Utils/logger');
 
 let peers = [];
 
@@ -11,36 +12,51 @@ const server = net.createServer((socket) => {
     });
 
     socket.on('data', (obj) => {
+
+        logger.info(`${obj}`);
         let hostInfo = jsonDecodeObj(obj);
-        peers.push([
-                hostInfo.ip,
-                hostInfo.port,
-                hostInfo.name
-            ]
-        );
-        console.log("added to list, current list: ",peers);
+        
+        if (hostInfo.connected) {
+            peers.push([
+                    hostInfo.ip,
+                    hostInfo.port,
+                    hostInfo.name
+                ]
+            );
+            logger.log('info', `Added new user to list! ${hostInfo.ip}:${hostInfo.port}`);
+        } else {
+
+            logger.log('info', 'Deleting disconnected user...');
+            peers.forEach((peerInfo, index, object) => {
+                const ip = peerInfo[0];
+                const port = peerInfo[1];
+                if (hostInfo.ip === ip && hostInfo.port === port)
+                    object.splice(index, 1);
+
+            });
+        }
+
     });
 
-    socket.on('close', (socket) => {
-        console.log('SOCKET CLOSED', socket);
+    socket.on('close', () => {
+        logger.log('verbose', 'SOCKED CLOSED');
     });
 
     let data = prepareNetworkMapData(peers);
     socket.write(data);
-    //socket.pipe(socket);
 
 });
 
 server.on('connection', () => {
-    console.log("someone connected!");
+    logger.log('verbose', 'New connection');
 });
 
 setInterval(()=>{
-    console.log("map: ", peers);
-},5000)
+    logger.log('debug', `map: ${peers}`);
+},5000);
 
 
 //pool
 server.listen(3500, '127.0.0.1');
 
-console.log("server listening...");
+logger.log('info', 'Server listening on port: 3500');
