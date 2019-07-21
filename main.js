@@ -1,17 +1,6 @@
 const Cluster = require('./src/Cluster');
 const { logger } = require('./src/Utils/logger');
 
-const POOL_CONFIG = {
-    address: 'http://127.0.0.1:9000',
-    port: 9000,
-    user: {
-        username: 'wallet.js',
-        private_key: null
-    }
-};
-
-//todo create sygnaling server
-
 const cluster = new Cluster();
 
 process.on('SIGINT', function() {
@@ -25,5 +14,4 @@ process.on('SIGINT', function() {
         .catch((error) => {
             logger.log('error', `Error while disconnecting from server, aborting...` + error);
         });
-
 });
