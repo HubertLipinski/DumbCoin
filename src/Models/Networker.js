@@ -1,4 +1,5 @@
 const net = require('net');
+const express = require('express');
 const config = require('../Utils/config');
 const { logger } = require('../Utils/logger.js');
 const {
@@ -18,9 +19,6 @@ class Networker {
         port = config.PORT,
         name = config.NAME)
     {
-
-        let test = 1;
-
         this.ip = ip;
         this.port = port;
         this.connected = false;
@@ -29,28 +27,29 @@ class Networker {
         this.blockchain = blockchain;
 
         this.signal();
-
-        if(test === 1) {
-            setTimeout(()=>{
-                // this.blockchain.fakeBlock();
-                logger.silly(`${JSON.stringify(this.blockchain.getChain())}`);
-                // throw new Error("eee");
-            },3000)
-        }
     }
 
-    signal(isConnected = true) {
-        //connect to signaling server, send own data get list of all users in pool
+    /**
+     * This function signal own data to signaling server on connect and disconnect event.
+     * @param isConnected
+     * @param needData
+     */
+    signal(isConnected = true, needData = false) {
         this.connected = isConnected;
         const signal = new net.Socket();
         signal.connect(3500, '127.0.0.1', () => {
-
             logger.log('debug', `connected to signaling server`);
 
-            signal.end(this.networkingInfo, () => {
-                logger.log('verbose', `Sent my own data to signaling server `);
-            });
-
+            if (needData) {
+                const request = jsonEncodeObj({needData: true});
+                signal.end(request, () => {
+                    logger.log('verbose', `Sent request for all users in pool`);
+                });
+            } else {
+                signal.end(this.networkingInfo, () => {
+                    logger.log('verbose', `Sent my own data to signaling server `);
+                });
+            }
         });
 
         signal.on('data', (buffer) => {
@@ -79,13 +78,18 @@ class Networker {
                 logger.log('error', 'client ' + error);
             });
 
-            //B
+            /**
+             * Peer [ B ]
+             * It handles requests from peer [ A ]
+             */
             socket.on('data', (obj) => {
 
                 let data = jsonDecodeObj(obj);
                 if(data.syn) {
 
                     let ackPacket = this.checkSYNandPrepareACK(data);
+                    if (ackPacket === false)
+                        socket.end();
                     if (ackPacket) {
                         socket.write(ACK(this.blockchain, ackPacket));
                     }
@@ -105,7 +109,6 @@ class Networker {
                         }
                     });
 
-                    //update data
                     data.payload.map((item) => {
                         if (item.data) {
                             const myBlock = this.blockchain.getBlock(item.index);
@@ -127,33 +130,40 @@ class Networker {
                 logger.log('error', `Error while starting server ${error}`);
             })
             .on('close', () => {
-                this.disconnect()
-                    .then((msg) => {
-                        logger.log('warn', `My server closed!`);
-                    })
-                    .catch((error) => {
-                        logger.log('error', `Error while disconnecting from server, aborting...` + error);
-                    });
                 logger.log('warn', `My server closed!`);
             })
             .listen(this.port, this.ip);
         logger.log('info', `Started server on port ${this.port}`);
-
-
-        setTimeout(()=>{
-            this.server.close();
-        }, 10000)
-
     }
 
-    //A
-    //peer a connect to peer b and sends syn request
+    createApiServer() {
+        const api = express();
+        const port = config.API_SERVER_PORT || 6000;
+        const bodyParser = require('body-parser');
+
+        api.use(bodyParser.urlencoded({extended: true}));
+        api.use(bodyParser.json());
+
+        const routes = require('../Api/routes');
+        routes(api, this);
+
+        api.listen(port);
+
+        console.log('blockchain API server started on port: ' + port);
+    }
+
+
+    /**
+     * Peer [ A ]
+     * peer A connect to peer B and sends syn request
+     * @param port
+     * @param ip
+     */
     gossipWithPeer(port,ip) {
         const payload =  new net.Socket();
-        payload.connect(port, ip, (socket) => {
+        payload.connect(port, ip, () => {
 
             let dataToSync = prepareSYN(this.blockchain);
-
             if (!this.blockchain.checkChain()) {
                 logger.log('error', "You can\'t manipulate blockchain\'s data!");
                 payload.end();
@@ -187,7 +197,6 @@ class Networker {
     }
 
     checkSYNandPrepareACK(data) {
-
         let ackPayload;
         if ((this.blockchain.signature !== data.signature)) {
             logger.log('info', `Given blockchain signature is diffrent, checking for changes`);
@@ -233,9 +242,7 @@ class Networker {
     }
 
     checkACKandPrepareACK2(data) {
-
-        const ack2Payload = data.payload.map(item => {
-            //check if block given data exists.
+        return data.payload.map(item => {
             const container = {};
             container['index'] = item.index;
             container['timestamp'] = item.timestamp;
@@ -262,8 +269,6 @@ class Networker {
 
             return container;
         });
-
-        return ack2Payload;
     }
 
     static extractDataFromItem(item) {
@@ -286,6 +291,10 @@ class Networker {
         }
     }
 
+    get myPort() {
+        return this.port
+    }
+
     get networkingInfo() {
         return jsonEncodeObj({
                 'connected' : this.connected,
@@ -297,7 +306,10 @@ class Networker {
     }
 
     get allPeers() {
-        return this.peerList;
+        return new Promise(resolve => {
+            this.signal(true, true);
+            resolve(this.peerList)
+        });
     }
 
     getMissingBlock(id) {
@@ -311,15 +323,13 @@ class Networker {
 
     disconnect() {
         const self = this;
-        return new Promise(function(resolve, reject) {
+        return new Promise((resolve, reject) => {
             logger.info('disconnecting...');
             self.connected = false;
             self.signal(false);
-            //silly
             setInterval(()=>{
                 resolve('Disconnected from server');
             },1000)
-
         });
     }
 }
