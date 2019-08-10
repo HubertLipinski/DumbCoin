@@ -15,36 +15,37 @@ const server = net.createServer((socket) => {
 
         logger.info(`${obj}`);
         let hostInfo = jsonDecodeObj(obj);
-        
-        if (hostInfo.connected) {
-            peers.push([
-                    hostInfo.ip,
-                    hostInfo.port,
-                    hostInfo.name
-                ]
-            );
-            logger.log('info', `Added new user to list! ${hostInfo.ip}:${hostInfo.port}`);
+
+        if (hostInfo.needData) {
+            logger.log('verbose', `Requested list of all users!`);
         } else {
+            if (hostInfo.connected) {
+                peers.push([
+                        hostInfo.ip,
+                        hostInfo.port,
+                        hostInfo.name
+                    ]
+                );
+                logger.log('info', `Added new user to list! ${hostInfo.ip}:${hostInfo.port}`);
+            } else {
+                logger.log('verbose', 'Deleting disconnected user...');
+                peers.forEach((peerInfo, index, object) => {
+                    const ip = peerInfo[0];
+                    const port = peerInfo[1];
+                    if (hostInfo.ip === ip && hostInfo.port === port)
+                        object.splice(index, 1);
 
-            logger.log('info', 'Deleting disconnected user...');
-            peers.forEach((peerInfo, index, object) => {
-                const ip = peerInfo[0];
-                const port = peerInfo[1];
-                if (hostInfo.ip === ip && hostInfo.port === port)
-                    object.splice(index, 1);
-
-            });
+                });
+            }
         }
-
-    });
-
-    socket.on('close', () => {
-        logger.log('verbose', 'SOCKED CLOSED');
     });
 
     let data = prepareNetworkMapData(peers);
     socket.write(data);
 
+    socket.on('close', () => {
+        logger.log('verbose', 'SOCKED CLOSED');
+    });
 });
 
 server.on('connection', () => {

@@ -39,7 +39,7 @@ class Blockchain {
         return SHA256(this.blocks + this.currentTransactions + this.miningReward + this.timestamp).toString();
     }
 
-    getSignature() {
+    get blockSignature() {
         return this.signature;
     }
 
@@ -66,6 +66,11 @@ class Blockchain {
         this.signature = this.calculateSignature();
     }
 
+    /**
+     *
+     * @param index
+     * @param blockInfo
+     */
     insertReceivedBlock(index, blockInfo) {
         let block = new Block(index, blockInfo.prevHash, blockInfo.transactions, blockInfo.proof);
         block.timestamp = blockInfo.timestamp;
@@ -142,7 +147,7 @@ class Blockchain {
         return this.blocks[this.blocks.length - 1];
     }
 
-    getChain() {
+    get chain() {
         return this.blocks;
     }
 
@@ -176,6 +181,10 @@ class Blockchain {
         return true;
     }
 
+    /**
+     * Returns id list of all blocks in blockchain
+     * @returns {*[]}
+     */
     get listOfId() {
         return this.blocks.map(index => index.index);
     }

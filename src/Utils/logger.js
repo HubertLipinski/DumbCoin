@@ -2,8 +2,8 @@
  * Configurations of logger.
  */
 const winston = require('winston');
-const winstonRotator = require('winston-daily-rotate-file');
-const dotenv = require('dotenv').config();
+const { LOG_LEVEL } = require('../Utils/config');
+
 
 const transport = new (winston.transports.DailyRotateFile)({
     filename: './src/Log/application-%DATE%.log',
@@ -14,23 +14,27 @@ const transport = new (winston.transports.DailyRotateFile)({
 });
 
 const date = new Date();
-const timestamp = date.toLocaleString();
+const timestampLog = date.toLocaleString();
 
 const logger = winston.createLogger({
     // levels: winston.config.npm.levels,
     format: winston.format.combine(
-        winston.format.printf(info => `${timestamp} [ ${info.level} ] - ${info.message}`),
+        winston.format.printf(info => `${timestampLog} [ ${info.level} ] - ${info.message}`),
     ),
 
     transports: [
         new (winston.transports.Console)({
-            level: process.env.LOG_LEVEL || 'info',
+            level: LOG_LEVEL || 'info',
             format: winston.format.combine(
-                winston.format.printf(info => `[ ${info.level} ] ${info.message}`),
+                winston.format.timestamp({
+                    format: 'HH:mm:ss',
+                    alias: 'customTimestamp',
+                }),
+                winston.format.printf(info => `[${info.customTimestamp}] [ ${info.level} ] ${info.message}`),
                 winston.format.colorize( {all: true}),
             ),
+            timestamp: true
         }),
-        transport,
     ]
 });
 

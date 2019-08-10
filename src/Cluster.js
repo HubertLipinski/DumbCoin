@@ -1,6 +1,7 @@
 const BlockChain = require('./Models/Blockchain');
 const Networker = require('./Models/Networker.js');
 const { logger } = require('./Utils/logger.js');
+const { GOSSIP_INTERVAL } = require('./Utils/config');
 
 /**
  * This class is my representation of User in peer to peer network.
@@ -10,43 +11,48 @@ const { logger } = require('./Utils/logger.js');
  * @class Cluster
  */
 class Cluster {
-    /**
-     * This is the Cluster constructor
-     */
     constructor() {
         this.blockChain = new BlockChain();
-        this.timestamp = Date.now();
-
         this.networker = new Networker(this.blockChain);
         this.networker.createServer();
+        this.list = this.fetchList();
 
-        setTimeout(()=>{
+        setInterval(()=>{
+            this.fetchList()
+                .then(() => {
+                    this.gossip()
+                });
+        }, GOSSIP_INTERVAL || 10000);
 
-            let list = this.networker.allPeers;
-            if(list.size > 0) {
+    }
 
-                const randomPeer = Math.floor(Math.random() * list.size);
+    async fetchList() {
+        logger.verbose('Fetching list...');
+        try {
+            this.list = await this.networker.allPeers
+        } catch (err) {
+            logger.error(err);
+        } finally {
+            logger.verbose('List fetched!');
+        }
+    }
 
-                if (list.has(randomPeer)) {
-                    const peer =  list.get(randomPeer);
-                    console.log(peer);
-                    const port = peer[1];
-                    const ip = peer[0];
-
+    gossip() {
+        const list = this.list;
+        if(list.size >= 1) {
+            const randomPeer = Math.floor(Math.random() * list.size);
+            if (list.has(randomPeer)) {
+                const peer =  list.get(randomPeer);
+                const port = peer[1];
+                const ip = peer[0];
+                if (port !== this.networker.myPort) {
+                    logger.info(`Gossiping with: ${ip+":"+port+" random peer: [ " + randomPeer} ]`);
                     this.networker.gossipWithPeer(port,ip);
-                } else {
-                    logger.info(`There's no one to connect, please wait.`)
                 }
             }
-        },1000);
-
-        setTimeout(()=>{
-            console.log("----------------------------------------------");
-           console.log(this.blockChain.getChain());
-        },15000);
-
-
-
+        } else {
+            logger.info(`There's no one to connect, please wait.`)
+        }
     }
 }
 
