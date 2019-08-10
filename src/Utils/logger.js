@@ -1,6 +1,7 @@
 /**
  * Configurations of logger.
  */
+require('winston-daily-rotate-file');
 const winston = require('winston');
 const { LOG_LEVEL } = require('../Utils/config');
 

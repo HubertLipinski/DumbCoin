@@ -15,6 +15,7 @@ class Cluster {
         this.blockChain = new BlockChain();
         this.networker = new Networker(this.blockChain);
         this.networker.createServer();
+        this.networker.createApiServer();
         this.list = this.fetchList();
 
         setInterval(()=>{

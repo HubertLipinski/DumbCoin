@@ -1,4 +1,5 @@
 const net = require('net');
+const express = require('express');
 const config = require('../Utils/config');
 const { logger } = require('../Utils/logger.js');
 const {
@@ -133,6 +134,22 @@ class Networker {
             })
             .listen(this.port, this.ip);
         logger.log('info', `Started server on port ${this.port}`);
+    }
+
+    createApiServer() {
+        const api = express();
+        const port = config.API_SERVER_PORT || 6000;
+        const bodyParser = require('body-parser');
+
+        api.use(bodyParser.urlencoded({extended: true}));
+        api.use(bodyParser.json());
+
+        const routes = require('../Api/routes');
+        routes(api, this);
+
+        api.listen(port);
+
+        console.log('blockchain API server started on port: ' + port);
     }
 
 
@@ -313,7 +330,6 @@ class Networker {
             setInterval(()=>{
                 resolve('Disconnected from server');
             },1000)
-
         });
     }
 }

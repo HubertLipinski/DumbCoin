@@ -121,7 +121,7 @@ class Blockchain {
         this.signature = this.calculateSignature();
     }
 
-    getCurrentTransactions() {
+    get transactions() {
         return JSON.stringify(this.currentTransactions);
     }
 
