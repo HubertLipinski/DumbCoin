@@ -22,6 +22,7 @@ class Networker {
         this.ip = ip;
         this.port = port;
         this.connected = false;
+        this.canGossip = true;
         this.name = name;
         this.peerList = null;
         this.blockchain = blockchain;
@@ -54,14 +55,16 @@ class Networker {
 
         signal.on('data', (buffer) => {
             this.peerList = decodeNetworkMapData(buffer);
+            this.canGossip = true;
         });
 
         signal.on('close', () => {
             logger.log('verbose', `Signaling server connection closed`);
+            this.canGossip = true;
         });
 
         signal.on('error', (error)=>{
-            logger.log('error', 'client ' + error);
+            logger.log('error', 'signal client ' + error);
 
         });
 
@@ -75,7 +78,7 @@ class Networker {
         this.server = net.createServer((socket) => {
             this.connected = true;
             socket.on('error', (error) => {
-                logger.log('error', 'client ' + error);
+                logger.log('error', 'createServer client ' + error);
             });
 
             /**
@@ -83,10 +86,9 @@ class Networker {
              * It handles requests from peer [ A ]
              */
             socket.on('data', (obj) => {
-
                 let data = jsonDecodeObj(obj);
                 if(data.syn) {
-
+                    this.canGossip = false;
                     let ackPacket = this.checkSYNandPrepareACK(data);
                     if (ackPacket === false)
                         socket.end();
@@ -116,12 +118,13 @@ class Networker {
                             myBlock.update(data);
                         }
                     });
-
+                    socket.destroy();
                 }
             });
 
             socket.on('close', () => {
                 logger.log('verbose', 'Socked closed.');
+                this.canGossip = true;
             });
 
         })
@@ -162,7 +165,7 @@ class Networker {
     gossipWithPeer(port,ip) {
         const payload =  new net.Socket();
         payload.connect(port, ip, () => {
-
+            this.canGossip = false;
             let dataToSync = prepareSYN(this.blockchain);
             if (!this.blockchain.checkChain()) {
                 logger.log('error', "You can\'t manipulate blockchain\'s data!");
@@ -186,12 +189,13 @@ class Networker {
                 logger.log('error', `data was darined`);
             });
 
-            payload.on('error', () => {
-                logger.log('error', `Error while exanging data`);
+            payload.on('error', (error) => {
+                logger.log('error', `Error while exanging data: ${error}`);
             });
 
             payload.on('end', () => {
                 logger.log('verbose', `Connection Ended`);
+                this.canGossip = true;
             });
         });
     }
@@ -322,6 +326,7 @@ class Networker {
     }
 
     disconnect() {
+        this.canGossip = false;
         const self = this;
         return new Promise((resolve, reject) => {
             logger.info('disconnecting...');
