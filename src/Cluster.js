@@ -52,20 +52,27 @@ class Cluster {
                     const port = peer[1];
                     const ip = peer[0];
                     if (port !== this.networker.myPort) {
-                        logger.info(`Gossiping with: ${ip+":"+port+" random peer: [ " + randomPeer} ]`);
-                        this.networker.gossipWithPeer(port,ip);
+                        try {
+                            logger.info(`Gossiping with: ${ip+":"+port+" random peer: [ " + randomPeer} ]`);
+                            this.networker.gossipWithPeer(port,ip);
+                        } catch (exception) {
+                            logger.error(`Catched error while gossiping: ${exception}`)
+                        }
                     }
                 }
             } else {
                 logger.info(`There's no one to connect, please wait.`)
             }
         }
-        logger.info(`I cant't gossip right now`);
     }
 
     mine() {
         if (process.env.BREAK !== true) {
-            this.networker.blockchain.mineCurrentTransactions(USER_PUBLIC_KEY);
+            try {
+                this.networker.blockchain.mineCurrentTransactions(USER_PUBLIC_KEY);
+            } catch (exception) {
+                logger.error(`Catched error while mining: ${exception}`)
+            }
         }
     }
 }
