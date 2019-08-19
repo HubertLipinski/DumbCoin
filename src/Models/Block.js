@@ -1,4 +1,5 @@
 const SHA256 = require('crypto-js/sha256');
+const Transaction = require('./Transaction');
 
 /**
  *  This is Block class. It's crucial element of blockchain.
@@ -31,7 +32,8 @@ class Block {
      * @returns {boolean}
      */
     hasValidTransactions() {
-        for (const transaction of this.transactions) {
+        for (let transaction of this.transactions) {
+            transaction = Transaction.fromResponse(transaction);
             if (!transaction.isValid())
                 return false;
         }

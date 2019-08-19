@@ -18,12 +18,17 @@ module.exports = function(api, networker) {
     api.post('/transactions', (req, res) => {
         const receiver = req.body.receiver;
         const amount = req.body.amount;
-        const balance = networker.blockchain.getBalanceOfAddress(USER_PUBLIC_KEY);
+        const balance = networker.blockchain.getBalanceOfAddress(USER_PUBLIC_KEY, true);
         if (balance <= 0 || (balance - amount) < 0) {
             res.json({
-                'status': 'You don\'t have enough money to send this transaction!'
+                'status': 'You don\'t have enough money to send this transaction! You can send max: '+balance
             });
-        } else {
+        } else if (amount <= 0) {
+            res.json({
+                'status': 'Amount must be grater than 0!'
+            });
+        }
+        else {
             const transaction = new Transaction(USER_PUBLIC_KEY, receiver, amount);
             transaction.signTransaction(myKey);
             networker.blockchain.addTransaction(transaction);

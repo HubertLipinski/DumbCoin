@@ -1,4 +1,5 @@
 const SHA256 = require('crypto-js/sha256');
+const { USER_PRIVATE_KEY } = require('../Utils/config');
 const EC = require('elliptic').ec;
 const ec = new EC('secp256k1');
 
@@ -38,7 +39,7 @@ class Transaction {
      * @param signingKey Key wich is used to sign the transaction
      */
     signTransaction(signingKey) {
-        if (signingKey.getPublic('hex') !== this.sender) {
+        if (signingKey.getPublic('hex') !== this.sender && this.sender !== 'MINING REWARD') {
             throw new Error('You cant sign this transaction!')
         }
 
@@ -63,6 +64,22 @@ class Transaction {
 
         const publicKey = ec.keyFromPublic(this.sender, 'hex');
         return publicKey.verify(this.calculateHash(), this.signature);
+    }
+
+    /**
+     * This function is used to recreate Transaction class from received json transaction.
+     * @param data
+     * @returns {Transaction}
+     */
+    static fromResponse(data) {
+        const myKey = ec.keyFromPrivate(USER_PRIVATE_KEY);
+        const recreatedTransaction = new Transaction(
+            data.sender,
+            data.receiver,
+            data.amount
+        );
+        recreatedTransaction.signTransaction(myKey);
+        return recreatedTransaction;
     }
 }
 

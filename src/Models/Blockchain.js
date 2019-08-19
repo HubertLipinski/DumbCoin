@@ -19,6 +19,7 @@ class Blockchain {
         this.blocks = [Blockchain.createGenesisBlock()];
         this.currentTransactions = [];
         this.miningReward = 50;
+        this.balance = 100;
         this.signature = this.calculateSignature();
         this.timestamp = Date.now();
     }
@@ -37,10 +38,6 @@ class Blockchain {
      */
     calculateSignature() {
         return SHA256(this.blocks + this.currentTransactions + this.miningReward + this.timestamp).toString();
-    }
-
-    get blockSignature() {
-        return this.signature;
     }
 
     /**
@@ -71,7 +68,7 @@ class Blockchain {
      * @param rewardAddress Wallet address of lucky receiver
      */
     mineCurrentTransactions(rewardAddress) {
-            if(this.currentTransactions.length > 1) {
+            if(this.currentTransactions.length > 2) {
                 const prevBlock = this.lastBlock();
                 process.env.BREAK = false;
                 const block = new Block(prevBlock.getIndex()+1, prevBlock.hashValue(), this.currentTransactions);
@@ -86,6 +83,7 @@ class Blockchain {
                     ];
                     console.log("Mined!");
                 }
+                process.env.BREAK = false;
             }
         this.signature = this.calculateSignature();
     }
@@ -118,7 +116,7 @@ class Blockchain {
      * @returns {number} Amount of coins in wallet
      */
     getBalanceOfAddress(address) {
-        let balance = 100;
+        let balance = this.balance;
         for (const block of this.blocks) {
             for(const transaction of block.transactions) {
                 if(transaction.sender === address)
