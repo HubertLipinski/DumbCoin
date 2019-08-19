@@ -1,5 +1,7 @@
+console.log(__filename);
 const Cluster = require('./src/Cluster');
 const { logger } = require('./src/Utils/logger');
+
 
 const cluster = new Cluster();
 
