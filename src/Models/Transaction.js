@@ -1,4 +1,5 @@
 const SHA256 = require('crypto-js/sha256');
+const { USER_PRIVATE_KEY } = require('../Utils/config');
 const EC = require('elliptic').ec;
 const ec = new EC('secp256k1');
 
@@ -38,8 +39,7 @@ class Transaction {
      * @param signingKey Key wich is used to sign the transaction
      */
     signTransaction(signingKey) {
-        //check the key
-        if (signingKey.getPublic('hex') !== this.sender) {
+        if (signingKey.getPublic('hex') !== this.sender && this.sender !== 'MINING REWARD') {
             throw new Error('You cant sign this transaction!')
         }
 
@@ -51,13 +51,11 @@ class Transaction {
     /**
      * This function checks if the the transaction is valid.
      * It is checked first if the sender address is from mine (When we have mining reward transaction) - in that case functions return true
-     * In other case function checks if transaction has signature and verifi it.
+     * In other case function checks if transaction has signature and verify it.
      * @returns {Buffer | Boolean | boolean | * | PromiseLike<boolean>|boolean}
      */
     isValid() {
-        //this transaction from the server as a reward for mined block
-        //todo change the address
-        if (this.sender === null)
+        if (this.sender === 'MINING REWARD')
             return true;
 
         if (!this.signature || this.signature.length === 0) {
@@ -68,6 +66,21 @@ class Transaction {
         return publicKey.verify(this.calculateHash(), this.signature);
     }
 
+    /**
+     * This function is used to recreate Transaction class from received json transaction.
+     * @param data
+     * @returns {Transaction}
+     */
+    static fromResponse(data) {
+        const myKey = ec.keyFromPrivate(USER_PRIVATE_KEY);
+        const recreatedTransaction = new Transaction(
+            data.sender,
+            data.receiver,
+            data.amount
+        );
+        recreatedTransaction.signTransaction(myKey);
+        return recreatedTransaction;
+    }
 }
 
 module.exports = Transaction;

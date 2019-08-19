@@ -3,8 +3,6 @@ const { logger } = require('./src/Utils/logger');
 
 const cluster = new Cluster();
 
-// ApiServer.startServer(cluster);
-
 process.on('SIGINT', function() {
     process.stdout.write('\033c');
     logger.warn('Detected CTRL+C COMBINATION, closing nicely... \n \t Waiting for other processes to end...');

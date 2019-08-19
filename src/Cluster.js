@@ -1,7 +1,7 @@
 const BlockChain = require('./Models/Blockchain');
 const Networker = require('./Models/Networker.js');
 const { logger } = require('./Utils/logger.js');
-const { GOSSIP_INTERVAL } = require('./Utils/config');
+const { GOSSIP_INTERVAL, USER_PUBLIC_KEY } = require('./Utils/config');
 
 /**
  * This class is my representation of User in peer to peer network.
@@ -25,6 +25,10 @@ class Cluster {
                 });
         }, GOSSIP_INTERVAL || 10000);
 
+        setInterval(()=>{
+            this.mine();
+        }, 1000);
+
     }
 
     async fetchList() {
@@ -39,20 +43,29 @@ class Cluster {
     }
 
     gossip() {
-        const list = this.list;
-        if(list.size >= 1) {
-            const randomPeer = Math.floor(Math.random() * list.size);
-            if (list.has(randomPeer)) {
-                const peer =  list.get(randomPeer);
-                const port = peer[1];
-                const ip = peer[0];
-                if (port !== this.networker.myPort) {
-                    logger.info(`Gossiping with: ${ip+":"+port+" random peer: [ " + randomPeer} ]`);
-                    this.networker.gossipWithPeer(port,ip);
+        if (this.networker.canGossip) {
+            const list = this.list;
+            if(list.size >= 1) {
+                const randomPeer = Math.floor(Math.random() * list.size);
+                if (list.has(randomPeer)) {
+                    const peer =  list.get(randomPeer);
+                    const port = peer[1];
+                    const ip = peer[0];
+                    if (port !== this.networker.myPort) {
+                        logger.info(`Gossiping with: ${ip+":"+port+" random peer: [ " + randomPeer} ]`);
+                        this.networker.gossipWithPeer(port,ip);
+                    }
                 }
+            } else {
+                logger.info(`There's no one to connect, please wait.`)
             }
-        } else {
-            logger.info(`There's no one to connect, please wait.`)
+        }
+        logger.info(`I cant't gossip right now`);
+    }
+
+    mine() {
+        if (process.env.BREAK !== true) {
+            this.networker.blockchain.mineCurrentTransactions(USER_PUBLIC_KEY);
         }
     }
 }
