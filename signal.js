@@ -1,14 +1,14 @@
 const net = require('net');
-
-const { prepareNetworkMapData, jsonDecodeObj } = require('./src/Utils/networking');
 const { logger } = require('./src/Utils/logger');
+const { prepareNetworkMapData, jsonDecodeObj } = require('./src/Utils/networking');
+const { POOL_ADDRESS, POOL_PORT } = require('./src/Utils/config');
 
 let peers = [];
 
 const server = net.createServer((socket) => {
 
     socket.on('error', (err) => {
-        console.log("socket error: ", err);
+        logger.error(`socket error: ${err}`);
     });
 
     socket.on('data', (obj) => {
@@ -34,7 +34,6 @@ const server = net.createServer((socket) => {
                     const port = peerInfo[1];
                     if (hostInfo.ip === ip && hostInfo.port === port)
                         object.splice(index, 1);
-
                 });
             }
         }
@@ -56,8 +55,5 @@ setInterval(()=>{
     logger.log('debug', `map: ${peers}`);
 },5000);
 
-
-//pool
-server.listen(3500, '127.0.0.1');
-
-logger.log('info', 'Server listening on port: 3500');
+server.listen(POOL_PORT, POOL_ADDRESS);
+logger.log('info', `Signaling server listening on: ${POOL_ADDRESS+':'+POOL_PORT}`);

@@ -68,7 +68,7 @@ class Blockchain {
      * @param rewardAddress Wallet address of lucky receiver
      */
     mineCurrentTransactions(rewardAddress) {
-            if(this.currentTransactions.length > 2) {
+            if(this.currentTransactions.length >= 2) {
                 const prevBlock = this.lastBlock();
                 process.env.BREAK = false;
                 const block = new Block(prevBlock.getIndex()+1, prevBlock.hashValue(), this.currentTransactions);
@@ -107,7 +107,7 @@ class Blockchain {
     }
 
     get transactions() {
-        return JSON.stringify(this.currentTransactions);
+        return this.currentTransactions;
     }
 
     /**

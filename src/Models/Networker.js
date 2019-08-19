@@ -167,12 +167,6 @@ class Networker {
         payload.connect(port, ip, () => {
             this.canGossip = false;
             let dataToSync = prepareSYN(this.blockchain);
-            if (!this.blockchain.checkChain()) {
-                logger.log('error', "You can\'t manipulate blockchain\'s data!");
-                payload.end();
-                throw new Error("You can't manipulate blockchain's data!");
-            }
-
             payload.write(SYN(this.blockchain, dataToSync));
 
             payload.on('data', (obj) => {
