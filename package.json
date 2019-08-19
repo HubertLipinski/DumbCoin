@@ -1,10 +1,9 @@
 {
-  "name": "blockchain",
+  "name": "dumbcoin",
   "version": "1.0.0",
-  "description": "",
+  "description": "Its simple peer to peer blockchain, that use gossip protocol for data exchange. ",
   "main": "main.js",
   "scripts": {
-    "signalhub": "signalhub listen -p 9000",
     "snyk-protect": "snyk protect",
     "prepare": "npm run snyk-protect"
   },
@@ -37,5 +36,18 @@
   "snyk": true,
   "devDependencies": {
     "jsdoc": "^3.6.2"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HubertLipinski/DumbCoin.git"
+  },
+  "keywords": [
+    "blockchain",
+    "gossip",
+    "protocol"
+  ],
+  "bugs": {
+    "url": "https://github.com/HubertLipinski/DumbCoin/issues"
+  },
+  "homepage": "https://github.com/HubertLipinski/DumbCoin#readme"
 }
