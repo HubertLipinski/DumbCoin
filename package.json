@@ -1,15 +1,45 @@
 {
-  "name": "blockchain",
-  "version": "1.0.1",
-  "description": "",
+  "name": "dumbcoin",
+  "version": "1.1.5",
+  "description": "With this package you can create simple peer to peer blockchain, that use gossip protocol for data exchange!",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "author": "Hubert Lipiński",
   "license": "ISC",
   "dependencies": {
+    "BlobBuilder": "^0.10.0",
+    "binary-pack": "^1.0.2",
+    "body-parser": "^1.19.0",
     "crypto": "^1.0.1",
-    "object-hash": "^1.3.1"
-  }
+    "crypto-js": "^3.1.9-1",
+    "dotenv": "^8.0.0",
+    "elliptic": "^6.4.1",
+    "express": "^4.17.1",
+    "moment": "^2.24.0",
+    "nssocket": "^0.6.0",
+    "socket.io": "^2.2.0",
+    "socket.io-client": "^2.2.0",
+    "winston": "^3.2.1",
+    "winston-daily-rotate-file": "^3.9.0",
+    "wrtc": "^0.4.1",
+    "ws": "^7.0.0"
+  },
+  "snyk": false,
+  "devDependencies": {
+    "jsdoc": "^3.6.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HubertLipinski/DumbCoin.git"
+  },
+  "keywords": [
+    "data exchange",
+    "cryptocurrency",
+    "blockchain",
+    "javascript blockchain",
+    "gossip protocol"
+  ],
+  "bugs": {
+    "url": "https://github.com/HubertLipinski/DumbCoin/issues"
+  },
+  "homepage": "https://github.com/HubertLipinski/DumbCoin#readme"
 }
