@@ -17,7 +17,7 @@ const transport = new (winston.transports.DailyRotateFile)({
 const date = new Date();
 const timestampLog = date.toLocaleString();
 
-const logger = winston.createLogger({
+const customLogger = winston.createLogger({
     // levels: winston.config.npm.levels,
     format: winston.format.combine(
         winston.format.printf(info => `${timestampLog} [ ${info.level} ] - ${info.message}`),
@@ -39,6 +39,6 @@ const logger = winston.createLogger({
     ]
 });
 
-winston.add(logger);
+winston.add(customLogger);
+module.exports = winston;
 
-module.exports.logger = winston;

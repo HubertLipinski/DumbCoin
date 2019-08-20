@@ -1,5 +1,5 @@
 const net = require('net');
-const { logger } = require('./src/Utils/logger');
+const logger = require('./src/Utils/logger');
 const { prepareNetworkMapData, jsonDecodeObj } = require('./src/Utils/networking');
 const { POOL_ADDRESS, POOL_PORT } = require('./src/Utils/config');
 

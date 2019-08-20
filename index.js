@@ -1,6 +1,6 @@
 console.log(__filename);
 const Cluster = require('./src/Cluster');
-const { logger } = require('./src/Utils/logger');
+const logger = require('./src/Utils/logger');
 
 
 const cluster = new Cluster();
@@ -17,3 +17,5 @@ process.on('SIGINT', function() {
             logger.log('error', `Error while disconnecting from server, aborting...` + error);
         });
 });
+
+module.exports = cluster;

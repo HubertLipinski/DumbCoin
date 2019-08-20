@@ -3,4 +3,5 @@
 node_modules/
 /.snyk
 /src/Log/*
-*log*
+.log*
+log.*

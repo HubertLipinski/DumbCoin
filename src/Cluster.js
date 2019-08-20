@@ -1,6 +1,6 @@
 const BlockChain = require('./Models/Blockchain');
 const Networker = require('./Models/Networker.js');
-const { logger } = require('./Utils/logger.js');
+const logger = require('./Utils/logger.js');
 const { GOSSIP_INTERVAL, USER_PUBLIC_KEY } = require('./Utils/config');
 
 /**

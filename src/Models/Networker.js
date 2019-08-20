@@ -1,7 +1,7 @@
 const net = require('net');
 const express = require('express');
 const config = require('../Utils/config');
-const { logger } = require('../Utils/logger.js');
+const logger = require('../Utils/logger.js');
 const {
     jsonEncodeObj,
     jsonDecodeObj,
