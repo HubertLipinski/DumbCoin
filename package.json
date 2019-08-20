@@ -1,7 +1,7 @@
 {
   "name": "dumbcoin",
-  "version": "1.1.0",
-  "description": "Its simple peer to peer blockchain, that use gossip protocol for data exchange.",
+  "version": "1.1.5",
+  "description": "With this package you can create simple peer to peer blockchain, that use gossip protocol for data exchange!",
   "main": "index.js",
   "author": "Hubert Lipiński",
   "license": "ISC",
@@ -32,9 +32,11 @@
     "url": "git+https://github.com/HubertLipinski/DumbCoin.git"
   },
   "keywords": [
+    "data exchange",
+    "cryptocurrency",
     "blockchain",
-    "gossip",
-    "protocol"
+    "javascript blockchain",
+    "gossip protocol"
   ],
   "bugs": {
     "url": "https://github.com/HubertLipinski/DumbCoin/issues"
