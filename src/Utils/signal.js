@@ -1,10 +1,14 @@
 const net = require('net');
-const logger = require('./src/Utils/logger');
-const { prepareNetworkMapData, jsonDecodeObj } = require('./src/Utils/networking');
-const { POOL_ADDRESS, POOL_PORT } = require('./src/Utils/config');
+const logger = require('./logger');
+const { prepareNetworkMapData, jsonDecodeObj } = require('./networking');
+const { POOL_ADDRESS, POOL_PORT } = require('./config');
 
 let peers = [];
 
+/**
+ * Creates a signaling server which provides the data about peers connected to blockchain
+ * @type {Server}
+ */
 const server = net.createServer((socket) => {
 
     socket.on('error', (err) => {
@@ -13,7 +17,6 @@ const server = net.createServer((socket) => {
 
     socket.on('data', (obj) => {
 
-        logger.info(`${obj}`);
         let hostInfo = jsonDecodeObj(obj);
 
         if (hostInfo.needData) {
@@ -51,9 +54,27 @@ server.on('connection', () => {
     logger.log('verbose', 'New connection');
 });
 
-setInterval(()=>{
-    logger.log('debug', `map: ${peers}`);
-},5000);
+/**
+ * Starts the signaling server
+ * @param port
+ * @param address
+ */
+module.exports.start = (port = POOL_PORT, address = POOL_ADDRESS) => {
+    server.listen(port, address);
+    logger.log('info', `Signaling server listening on: ${address+':'+port}`);
+};
 
-server.listen(POOL_PORT, POOL_ADDRESS);
-logger.log('info', `Signaling server listening on: ${POOL_ADDRESS+':'+POOL_PORT}`);
+/**
+ * Return the list of connected peers
+ * @returns {Array}
+ */
+module.exports.peers = () => {
+    return peers;
+};
+
+/**
+ * Clear peer list
+ */
+module.exports.clearList = () => {
+  peers = [];
+};

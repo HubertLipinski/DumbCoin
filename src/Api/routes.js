@@ -2,7 +2,6 @@ const Transaction = require('../Models/Transaction');
 const { USER_PRIVATE_KEY, USER_PUBLIC_KEY } = require('../Utils/config');
 const EC = require('elliptic').ec;
 const ec = new EC('secp256k1');
-const { jsonEncodeObj } = require('../Utils/networking');
 
 const myKey = ec.keyFromPrivate(USER_PRIVATE_KEY);
 

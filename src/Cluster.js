@@ -15,22 +15,13 @@ class Cluster {
         this.blockChain = new BlockChain();
         this.networker = new Networker(this.blockChain);
         this.networker.createServer();
-        this.networker.createApiServer();
         this.list = this.fetchList();
-
-        setInterval(()=>{
-            this.fetchList()
-                .then(() => {
-                    this.gossip()
-                });
-        }, GOSSIP_INTERVAL || 10000);
-
-        setInterval(()=>{
-            this.mine();
-        }, 1000);
-
     }
 
+    /**
+     * This function fetching list of active peers in network
+     * @returns {Promise<void>}
+     */
     async fetchList() {
         logger.verbose('Fetching list...');
         try {
@@ -42,6 +33,9 @@ class Cluster {
         }
     }
 
+    /**
+     * This function is responsible for data exchange between random peers
+     */
     gossip() {
         if (this.networker.canGossip) {
             const list = this.list;
@@ -66,6 +60,22 @@ class Cluster {
         }
     }
 
+    /**
+     * @see gossip
+     * Gossiping with given interval
+     */
+    gossipWithInterval() {
+        this.gossipInterval = setInterval(()=>{
+            this.fetchList()
+                .then(() => {
+                    this.gossip()
+                });
+        }, GOSSIP_INTERVAL || 10000);
+    }
+
+    /**
+     * Mine current transactions and reward miner
+     */
     mine() {
         if (process.env.BREAK !== true) {
             try {
@@ -74,6 +84,26 @@ class Cluster {
                 logger.error(`Catched error while mining: ${exception}`)
             }
         }
+    }
+
+    /**
+     * @see mine
+     * Mining with given interval
+     */
+    mineWithInterval() {
+        this.miningInterval = setInterval(()=>{
+            this.mine();
+        }, 1000);
+    }
+
+    /**
+     * This function stops mining and gossiping intervals if active
+     */
+    stop() {
+        if (this.gossipInterval)
+            clearInterval(this.gossipInterval);
+        if(this.miningInterval)
+            clearInterval(this.miningInterval);
     }
 }
 
