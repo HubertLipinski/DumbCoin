@@ -24,15 +24,15 @@ class Networker {
     constructor(
         blockchain,
         signal = false,
-        ip = config.IP,
-        port = config.PORT,
-        name = config.NAME)
+        ip,
+        port,
+        name)
     {
-        this.ip = ip;
-        this.port = port;
+        this.ip = ip || config.IP;
+        this.port = port || config.PORT;
         this.connected = false;
         this.canGossip = true;
-        this.name = name;
+        this.name = name || config.NAME;
         this.peerList = null;
         this.blockchain = blockchain;
 
