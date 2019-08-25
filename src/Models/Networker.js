@@ -16,12 +16,14 @@ class Networker {
     /**
      *
      * @param blockchain
+     * @param signal
      * @param ip
      * @param port
      * @param name
      */
     constructor(
         blockchain,
+        signal = false,
         ip = config.IP,
         port = config.PORT,
         name = config.NAME)
@@ -34,7 +36,8 @@ class Networker {
         this.peerList = null;
         this.blockchain = blockchain;
 
-        this.signal();
+        if (signal)
+            this.signal();
     }
 
     /**
