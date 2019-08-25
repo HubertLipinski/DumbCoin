@@ -6,7 +6,6 @@
   "author": "Hubert Lipiński",
   "license": "ISC",
   "dependencies": {
-    "BlobBuilder": "^0.10.0",
     "binary-pack": "^1.0.2",
     "body-parser": "^1.19.0",
     "crypto": "^1.0.1",
@@ -15,13 +14,8 @@
     "elliptic": "^6.4.1",
     "express": "^4.17.1",
     "moment": "^2.24.0",
-    "nssocket": "^0.6.0",
-    "socket.io": "^2.2.0",
-    "socket.io-client": "^2.2.0",
     "winston": "^3.2.1",
-    "winston-daily-rotate-file": "^3.9.0",
-    "wrtc": "^0.4.1",
-    "ws": "^7.0.0"
+    "winston-daily-rotate-file": "^3.9.0"
   },
   "snyk": false,
   "devDependencies": {
