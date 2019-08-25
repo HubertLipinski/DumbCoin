@@ -13,6 +13,13 @@ const {
 
 
 class Networker {
+    /**
+     *
+     * @param blockchain
+     * @param ip
+     * @param port
+     * @param name
+     */
     constructor(
         blockchain,
         ip = config.IP,
@@ -74,6 +81,11 @@ class Networker {
 
     }
 
+    /**
+     * Server which is crucial to gossiping between nodes
+     * Peer [ B ]
+     * It handles requests from peer [ A ]
+     */
     createServer() {
         this.server = net.createServer((socket) => {
             this.connected = true;
@@ -81,10 +93,6 @@ class Networker {
                 logger.log('error', 'createServer client ' + error);
             });
 
-            /**
-             * Peer [ B ]
-             * It handles requests from peer [ A ]
-             */
             socket.on('data', (obj) => {
                 let data = jsonDecodeObj(obj);
                 if(data.syn) {
@@ -139,6 +147,10 @@ class Networker {
         logger.log('info', `Started server on port ${this.port}`);
     }
 
+    /**
+     * Starts the api server on given port
+     * @param port
+     */
     createApiServer(port = config.API_SERVER_PORT) {
         const api = express();
         const bodyParser = require('body-parser');
@@ -191,6 +203,11 @@ class Networker {
         });
     }
 
+    /**
+     * Check Synchronize packet and prepare Acknowledge response
+     * @param data
+     * @returns { Array | boolean }
+     */
     checkSYNandPrepareACK(data) {
         let ackPayload;
         if ((this.blockchain.signature !== data.signature)) {
@@ -236,6 +253,11 @@ class Networker {
         return ackPayload;
     }
 
+    /**
+     * Chceck Acknowledge packet and prepare Acknowledge 2 response
+     * @param data
+     * @returns { Array }
+     */
     checkACKandPrepareACK2(data) {
         return data.payload.map(item => {
             const container = {};
@@ -266,6 +288,11 @@ class Networker {
         });
     }
 
+    /**
+     *
+     * @param item
+     * @returns {{prevHash: *, proof: *, transactions: *, hash: *, timestamp: *}}
+     */
     static extractDataFromItem(item) {
         return {
             'proof': item.data.proof,
@@ -276,6 +303,11 @@ class Networker {
         }
     }
 
+    /**
+     *
+     * @param Block
+     * @returns {{prevHash: *, proof: *, transactions: *, hash: *, timestamp: *}}
+     */
     static extractDataFromBlock(Block) {
         return {
             'proof': Block.proof,
@@ -307,6 +339,11 @@ class Networker {
         });
     }
 
+    /**
+     *
+     * @param id
+     * @returns {{data: {prevHash: *, proof: *, transactions: *, hash: *, timestamp: *}, index: *, timestamp: *}}
+     */
     getMissingBlock(id) {
         const block = this.blockchain.getBlock(id);
         return {
@@ -316,6 +353,10 @@ class Networker {
             };
     }
 
+    /**
+     * Disconnect from pool and signal to signaling server.
+     * @returns {Promise<any>}
+     */
     disconnect() {
         this.canGossip = false;
         const self = this;

@@ -136,6 +136,11 @@ class Blockchain {
         return this.blocks;
     }
 
+    /**
+     * Returns with given index
+     * @param index
+     * @returns {Block}
+     */
     getBlock(index) {
         const wantedBlock = this.blocks.filter(block => {
             return block.index === index;
