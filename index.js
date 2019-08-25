@@ -2,6 +2,7 @@ const ClusterModel = require('./src/Cluster');
 const logger = require('./src/Utils/logger');
 const SignalModel = require('./src/Utils/signal');
 const BlockChainModel = require('./src/Models/Blockchain');
+const NetworkerModel = require('./src/Models/Networker');
 
 /**
  * This function prevents fast exit from cluster (CTRL + C),
@@ -35,11 +36,22 @@ const Blockchain = () => {
     return new BlockChainModel();
 };
 
+const Networker = (blockchain, signal = false, name = null, ip = null, port = null) => {
+    return new NetworkerModel(
+        blockchain,
+        signal,
+        ip,
+        port,
+        name
+    );
+};
+
 //todo add wallet
 
 module.exports = {
     Cluster,
     Signal,
+    Networker,
     Blockchain,
     handleClusterExit
 };
