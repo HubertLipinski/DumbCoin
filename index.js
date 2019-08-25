@@ -1,6 +1,7 @@
-const Cluster = require('./src/Cluster');
+const ClusterModel = require('./src/Cluster');
 const logger = require('./src/Utils/logger');
-const Signal = require('./src/Utils/signal');
+const SignalModel = require('./src/Utils/signal');
+const BlockChainModel = require('./src/Models/Blockchain');
 
 /**
  * This function prevents fast exit from cluster (CTRL + C),
@@ -22,8 +23,23 @@ const handleClusterExit = (cluster) => {
     });
 };
 
+const Cluster = (fetch = false) => {
+  return new ClusterModel(fetch);
+};
+
+const Signal = () => {
+    return SignalModel;
+};
+
+const Blockchain = () => {
+    return new BlockChainModel();
+};
+
+//todo add wallet
+
 module.exports = {
     Cluster: Cluster,
-    signal: Signal,
+    Signal: Signal,
+    Blockchain: Blockchain,
     handleClusterExit: handleClusterExit
 };

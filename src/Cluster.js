@@ -10,11 +10,15 @@ const { GOSSIP_INTERVAL, USER_PUBLIC_KEY } = require('./Utils/config');
  * @class Cluster
  */
 class Cluster {
-    constructor() {
+    /**
+     * @param fetch - Determines if cluster should get list of peers when created
+     */
+    constructor(fetch = false) {
         this.blockChain = new BlockChain();
         this.networker = new Networker(this.blockChain);
         this.networker.createServer();
-        this.list = this.fetchList();
+        if (fetch)
+            this.list = this.fetchList();
     }
 
     /**
