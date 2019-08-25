@@ -38,8 +38,8 @@ const Blockchain = () => {
 //todo add wallet
 
 module.exports = {
-    Cluster: Cluster,
-    Signal: Signal,
-    Blockchain: Blockchain,
-    handleClusterExit: handleClusterExit
+    Cluster,
+    Signal,
+    Blockchain,
+    handleClusterExit
 };
