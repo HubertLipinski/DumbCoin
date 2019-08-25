@@ -40,6 +40,10 @@ class Block {
         return true;
     }
 
+    /**
+     * Update block from given data
+     * @param data
+     */
     update(data) {
         this.proof = data.proof;
         this.transactions = data.transactions;

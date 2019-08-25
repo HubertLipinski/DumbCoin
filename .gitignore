@@ -5,3 +5,4 @@ node_modules/
 /src/Log/*
 .log*
 log.*
+test.js
