@@ -4,9 +4,8 @@ const logger = require('./Utils/logger.js');
 const { GOSSIP_INTERVAL, USER_PUBLIC_KEY } = require('./Utils/config');
 
 /**
- * This class is my representation of User in peer to peer network.
- * Every user starts with its own copy of blockchain wich must be synchronized beetwen other peers in network - using my own implementation of gossip protocol
- * Peers known about each other through sygnaling server (signalhub) and are automaticly connected to a pool.
+ * Every user starts with its own copy of blockchain wich must be synchronized between other peers in network - using my own implementation of gossip protocol
+ * Peers known about each other through signaling server and are automatically connected to a pool.
  * Cluster communicates with every other component in blockchain
  * @class Cluster
  */
