@@ -23,8 +23,8 @@ const handleClusterExit = (cluster) => {
     });
 };
 
-const Cluster = (fetch = false) => {
-  return new ClusterModel(fetch);
+const Cluster = (fetch = false, signal = false) => {
+  return new ClusterModel(fetch, signal);
 };
 
 const Signal = () => {
