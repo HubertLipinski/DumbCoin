@@ -31,9 +31,16 @@ What's more, you can use the modules separately, or create your own Blockchain u
   ### Instalation
   ```
   npm i dumbcoin
-  cp .env.example .env // linux
-  copy .env.example .env // windows
   ```
+  on Windows:
+  ```
+  copy .env.example .env
+  ```
+  on Linux:
+  ```
+  cp .env.example .env
+  ```
+  
    ### Usage
    
    You can import modules from DumbCoin package as shown below:
