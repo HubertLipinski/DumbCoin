@@ -70,7 +70,7 @@ What's more, you can use the modules separately, or create your own Blockchain u
   https://hubertlipinski.github.io/DumbCoin/
  
 ## API
-  DubmCoin provides an api for blockchain. You can downloadPostman collection [here](https://www.getpostman.com/collections/91b80ec4246ab266794e)
+  DubmCoin provides an api for blockchain. You can download Postman collection [here](https://www.getpostman.com/collections/91b80ec4246ab266794e)
   #### Variables
   **{{address}}** - Your address on which API server is running i.e localhost <br/>
   **{{port}}** - Port on which API server is running i.e 6010
