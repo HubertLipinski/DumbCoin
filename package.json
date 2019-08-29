@@ -1,6 +1,6 @@
 {
   "name": "dumbcoin",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "With this package you can create simple peer to peer blockchain, that use gossip protocol for data exchange!",
   "main": "index.js",
   "author": "Hubert Lipiński",
