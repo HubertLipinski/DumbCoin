@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: Models/Blockchain.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: Models/Blockchain.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const Block = require('./Block');
+const Transaction = require('./Transaction');
+
+const { isProofValid, generateProof } = require('../Utils/proof');
+const SHA256 = require('crypto-js/sha256');
+
+/**
+ * This class is the representation of 'blockchain'
+ * Blockchain class stores and manages all blocks and transactions
+ *  Its the most important aspect of blockchain network
+ * @class Blockchain
+ */
+class Blockchain {
+    /**
+     * @constructs
+     * Constructor of Blockchain class.
+     */
+    constructor() {
+        this.blocks = [Blockchain.createGenesisBlock()];
+        this.currentTransactions = [];
+        this.miningReward = 50;
+        this.balance = 100;
+        this.signature = this.calculateSignature();
+        this.timestamp = Date.now();
+    }
+
+    /**
+     * This function creates the genesis block
+     * @returns {Block}
+     */
+    static createGenesisBlock() {
+        return new Block(0,1,[],0);
+    }
+
+    /**
+     * This function return unique SHA256 signature of current block
+     * @returns {hash}
+     */
+    calculateSignature() {
+        return SHA256(this.blocks + this.currentTransactions + this.miningReward + this.timestamp).toString();
+    }
+
+    /**
+     * This functions add block to an array
+     * @param block
+     */
+    mineBlock(block) {
+        this.blocks.push(block);
+        this.signature = this.calculateSignature();
+    }
+
+    /**
+     *
+     * @param index
+     * @param blockInfo
+     */
+    insertReceivedBlock(index, blockInfo) {
+        let block = new Block(index, blockInfo.prevHash, blockInfo.transactions, blockInfo.proof);
+        block.timestamp = blockInfo.timestamp;
+        this.blocks.push(block);
+        this.signature = this.calculateSignature();
+    }
+
+    /**
+     * This function is my implementation of 'mining'.
+     * It takes the currentTransactions and 'mine it' using prof.js utility
+     *
+     * @param rewardAddress Wallet address of lucky receiver
+     */
+    mineCurrentTransactions(rewardAddress) {
+            if(this.currentTransactions.length >= 2) {
+                const prevBlock = this.lastBlock();
+                process.env.BREAK = false;
+                const block = new Block(prevBlock.getIndex()+1, prevBlock.hashValue(), this.currentTransactions);
+                const { proof, dontMine } =  generateProof(prevBlock.getProof());
+                block.setProof(proof);
+                this.currentTransactions = [];
+                if (dontMine !== 'true') {
+                    console.log("Mining...");
+                    this.mineBlock(block);
+                    this.currentTransactions = [
+                        new Transaction('MINING REWARD', rewardAddress, this.miningReward)
+                    ];
+                    console.log("Mined!");
+                }
+                process.env.BREAK = false;
+            }
+        this.signature = this.calculateSignature();
+    }
+
+    /**
+     * This function checks and add transaction to an array
+     * @param transaction Transaction to add
+     */
+    addTransaction(transaction) {
+        if(transaction.sender === transaction.receiver)
+            throw new Error('You cannot send money to yourself!');
+
+        if(!transaction.sender || !transaction.receiver)
+            throw new Error('Transaction must have sender and receiver!');
+
+        if(!transaction.isValid())
+            throw new Error('Cannot add invalid transaction!');
+
+        this.currentTransactions.push(transaction);
+        this.signature = this.calculateSignature();
+    }
+
+    get transactions() {
+        return this.currentTransactions;
+    }
+
+    /**
+     * It returns the balacne of given wallet
+     * @param address Wallet addres
+     * @returns {number} Amount of coins in wallet
+     */
+    getBalanceOfAddress(address) {
+        let balance = this.balance;
+        for (const block of this.blocks) {
+            for(const transaction of block.transactions) {
+                if(transaction.sender === address)
+                    balance -= transaction.amount;
+                if(transaction.receiver === address)
+                    balance += transaction.amount;
+            }
+        }
+        return balance;
+    }
+
+    lastBlock() {
+        return this.blocks[this.blocks.length - 1];
+    }
+
+    get chain() {
+        return this.blocks;
+    }
+
+    /**
+     * Returns with given index
+     * @param index
+     * @returns {Block}
+     */
+    getBlock(index) {
+        const wantedBlock = this.blocks.filter(block => {
+            return block.index === index;
+        });
+        return wantedBlock[0];
+    }
+
+    /**
+     * This function check the validity of the blockchain.
+     * It check if all the blocks are valid and also checks their transaction
+     * @returns {boolean}
+     */
+    checkChain() {
+        for (let i=1; i&lt;this.blocks.length; i++) {
+            const currentBlock = this.blocks[i];
+            const prevBlock = this.blocks[i-1];
+
+            if(!currentBlock.hasValidTransactions())
+                return false;
+
+            if (currentBlock.prevBlockHash() !== prevBlock.hashValue())
+                return false;
+
+            if (!isProofValid(prevBlock.getProof(), currentBlock.getProof()))
+                return false;
+
+        }
+        return true;
+    }
+
+    /**
+     * Returns id list of all blocks in blockchain
+     * @returns {*[]}
+     */
+    get listOfId() {
+        return this.blocks.map(index => index.index);
+    }
+}
+
+module.exports = Blockchain;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="ACK.html">ACK</a></li><li><a href="Block.html">Block</a></li><li><a href="Blockchain.html">Blockchain</a></li><li><a href="Cluster.html">Cluster</a></li><li><a href="Construction.html">Construction</a></li><li><a href="Constructor.html">Constructor</a></li><li><a href="Networker.html">Networker</a></li><li><a href="SYN.html">SYN</a></li><li><a href="Transaction.html">Transaction</a></li></ul><h3>Global</h3><ul><li><a href="global.html#clearList">clearList</a></li><li><a href="global.html#decodeNetworkMapData">decodeNetworkMapData</a></li><li><a href="global.html#DIFFICULTY">DIFFICULTY</a></li><li><a href="global.html#generateProof">generateProof</a></li><li><a href="global.html#isProofValid">isProofValid</a></li><li><a href="global.html#peers">peers</a></li><li><a href="global.html#prepareNetworkMapData">prepareNetworkMapData</a></li><li><a href="global.html#prepareSYN">prepareSYN</a></li><li><a href="global.html#server">server</a></li><li><a href="global.html#start">start</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.2</a> on Thu Aug 29 2019 21:20:15 GMT+0200 (Środkowoeuropejski czas letni)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

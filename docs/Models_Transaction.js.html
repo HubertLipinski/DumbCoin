@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: Models/Transaction.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: Models/Transaction.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const SHA256 = require('crypto-js/sha256');
+const { USER_PRIVATE_KEY } = require('../Utils/config');
+const EC = require('elliptic').ec;
+const ec = new EC('secp256k1');
+
+/**
+ * This class represent Transaction.
+ * Transaction are being made between two people, and require their public key
+ * the person who sends the amount must sign the transaction with his key,
+ * if the key does not match or the transaction has not been signed, blockchain will not accept it
+ * @class Transaction
+ */
+class Transaction {
+    /**
+     * @constructs
+     * Construction of Transaction class.
+     *
+     * @param sender Wallet adress of the sender
+     * @param receiver Wallet adress of the receiver
+     * @param amount Amount of coins to send
+     */
+    constructor(sender, receiver, amount) {
+        this.sender = sender;
+        this.receiver = receiver;
+        this.amount = amount;
+        this.timestamp = Date.now();
+    }
+
+    /**
+     * This function return calculated hash of the transaction
+     * @returns {hash}
+     */
+    calculateHash() {
+        return SHA256(this.sender + this.receiver + this.amount + this.timestamp).toString();
+    }
+
+    /**
+     * This function checks the provided key and then signs the transaction with it
+     * @param signingKey Key wich is used to sign the transaction
+     */
+    signTransaction(signingKey) {
+        if (signingKey.getPublic('hex') !== this.sender &amp;&amp; this.sender !== 'MINING REWARD') {
+            throw new Error('You cant sign this transaction!')
+        }
+
+        const transactionHash = this.calculateHash();
+        const sign = signingKey.sign(transactionHash, 'base64');
+        this.signature = sign.toDER('hex');
+    }
+
+    /**
+     * This function checks if the the transaction is valid.
+     * It is checked first if the sender address is from mine (When we have mining reward transaction) - in that case functions return true
+     * In other case function checks if transaction has signature and verify it.
+     * @returns {Buffer | Boolean | boolean | * | PromiseLike&lt;boolean>|boolean}
+     */
+    isValid() {
+        if (this.sender === 'MINING REWARD')
+            return true;
+
+        if (!this.signature || this.signature.length === 0) {
+            throw new Error('No signature found!');
+        }
+
+        const publicKey = ec.keyFromPublic(this.sender, 'hex');
+        return publicKey.verify(this.calculateHash(), this.signature);
+    }
+
+    /**
+     * This function is used to recreate Transaction class from received json transaction.
+     * @param data
+     * @returns {Transaction}
+     */
+    static fromResponse(data) {
+        const myKey = ec.keyFromPrivate(USER_PRIVATE_KEY);
+        const recreatedTransaction = new Transaction(
+            data.sender,
+            data.receiver,
+            data.amount
+        );
+        recreatedTransaction.signTransaction(myKey);
+        return recreatedTransaction;
+    }
+}
+
+module.exports = Transaction;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="ACK.html">ACK</a></li><li><a href="Block.html">Block</a></li><li><a href="Blockchain.html">Blockchain</a></li><li><a href="Cluster.html">Cluster</a></li><li><a href="Construction.html">Construction</a></li><li><a href="Constructor.html">Constructor</a></li><li><a href="Networker.html">Networker</a></li><li><a href="SYN.html">SYN</a></li><li><a href="Transaction.html">Transaction</a></li></ul><h3>Global</h3><ul><li><a href="global.html#clearList">clearList</a></li><li><a href="global.html#decodeNetworkMapData">decodeNetworkMapData</a></li><li><a href="global.html#DIFFICULTY">DIFFICULTY</a></li><li><a href="global.html#generateProof">generateProof</a></li><li><a href="global.html#isProofValid">isProofValid</a></li><li><a href="global.html#peers">peers</a></li><li><a href="global.html#prepareNetworkMapData">prepareNetworkMapData</a></li><li><a href="global.html#prepareSYN">prepareSYN</a></li><li><a href="global.html#server">server</a></li><li><a href="global.html#start">start</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.2</a> on Thu Aug 29 2019 21:20:15 GMT+0200 (Środkowoeuropejski czas letni)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
