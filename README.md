@@ -5,12 +5,12 @@
 
 - [What is DumbCoin](#what-is-dumbcoin)
 - [How to start](#how-to-start)
-- [P2P Data Exchange](#p2p-data-exchange)
+- [P2P and Data Exchange](#p2p-and-data-exchange)
 - [Modules](#modules)
-  - Cluster
-  - Networker
-  - Blockchain
-  - Signal
+  - [Cluster](#cluster)
+  - [Signal](#signal)
+  - [Networker](#networker)
+  - [Blockchain](#blockchain)
   - ~~Wallet~~
 - [Documentation](#documentation)
 
@@ -29,9 +29,14 @@ What's more, you can use the modules separately, or create your own Blockchain u
 
 ## How to start
   ### Instalation
+  1. Install DumbCoin via packet manager npm/yarn
   ```
   npm i dumbcoin
   ```
+  2. Copy .env.example .env and complete it according to your needs <br/>
+   Windows: `copy .env.example .env`<br/>
+   Linux: `cp .env.example .env`
+  
    ### Usage
    
    You can import modules from DumbCoin package as shown below:
@@ -53,3 +58,22 @@ What's more, you can use the modules separately, or create your own Blockchain u
    const { Cluster } = require('dumbcoin');
    const cluster = Cluster(); // now blockchain is ready to use
    ```
+## P2P and Data Exchange
+  ### How it works
+  Dumbcoin is built in [peer-to-peer](https://en.wikipedia.org/wiki/Peer-to-peer) topology and data exchange/synchronization is handled by [gossip protocol](https://en.wikipedia.org/wiki/Gossip_protocol).
+   Each peer is both a client and a server at the same time. The information about active nodes are transmited via Signaling server, that way all users have current list and can gossip with random Peer to keep blockchain well synchronized
+  
+  Whole process can be ilustrated as following:
+  ![Imgur](https://i.imgur.com/slKvSxq.png)
+  1. Synchronize (SYN) packet - Peer A sends his current data to peer B.
+  2. Acknowledge (ACK) packet - Peer B compares the received data's timestamps with it's own. For each documents, if it's timestamp is older, just place it in the ACK payload, if it's newer place it along with it's data. And if timestamps are the same, do nothing.
+  3. Acknowledge 2 (ACK2) packet - Peer A updates it's document if ACK data is provided, then sends back the latest data to Peer B for those where no ACK data was provided.
+  #### More info
+  For more information how this works check [Cassandra training video](https://academy.datastax.com/units/distributed-architecture-gossip?resource=ds201-foundations-apache-cassandra) or [Scylla explanation](https://docs.scylladb.com/kb/gossip/)
+  
+## Modules
+  ### Cluster
+  ### Signal
+  ### Networker
+  ### Blockchain
+  
