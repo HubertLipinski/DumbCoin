@@ -6,12 +6,6 @@
 - [What is DumbCoin](#what-is-dumbcoin)
 - [How to start](#how-to-start)
 - [P2P and Data Exchange](#p2p-and-data-exchange)
-- [Modules](#modules)
-  - [Cluster](#cluster)
-  - [Signal](#signal)
-  - [Networker](#networker)
-  - [Blockchain](#blockchain)
-  - ~~Wallet~~
 - [Documentation](#documentation)
 
 ## What is DumbCoin
@@ -71,9 +65,5 @@ What's more, you can use the modules separately, or create your own Blockchain u
   #### More info
   For more information how this works check [Cassandra training video](https://academy.datastax.com/units/distributed-architecture-gossip?resource=ds201-foundations-apache-cassandra) or [Scylla explanation](https://docs.scylladb.com/kb/gossip/)
   
-## Modules
-  ### Cluster
-  ### Signal
-  ### Networker
-  ### Blockchain
-  
+## Documentation
+  https://hubertlipinski.github.io/DumbCoin/
