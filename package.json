@@ -5,6 +5,9 @@
   "main": "index.js",
   "author": "Hubert Lipiński",
   "license": "ISC",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  },
   "dependencies": {
     "binary-pack": "^1.0.2",
     "body-parser": "^1.19.0",
