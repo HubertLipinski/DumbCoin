@@ -1,5 +1,5 @@
 {
-  "name": "dumbcoin",
+  "name": "@hubertlipinski/dumbcoin",
   "version": "1.2.4",
   "description": "With this package you can create simple peer to peer blockchain, that use gossip protocol for data exchange!",
   "main": "index.js",
