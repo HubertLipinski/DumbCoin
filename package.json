@@ -1,10 +1,13 @@
 {
-  "name": "dumbcoin",
-  "version": "1.2.3",
+  "name": "@hubertlipinski/dumbcoin",
+  "version": "1.2.4",
   "description": "With this package you can create simple peer to peer blockchain, that use gossip protocol for data exchange!",
   "main": "index.js",
   "author": "Hubert Lipiński",
   "license": "ISC",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  },
   "dependencies": {
     "binary-pack": "^1.0.2",
     "body-parser": "^1.19.0",
