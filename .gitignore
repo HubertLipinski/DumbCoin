@@ -6,3 +6,4 @@ node_modules/
 .log*
 log.*
 test.js
+.nmprc
