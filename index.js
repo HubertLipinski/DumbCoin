@@ -6,7 +6,7 @@ const NetworkerModel = require('./src/Models/Networker');
 
 /**
  * This function prevents fast exit from cluster (CTRL + C),
- * sends inforamtion about cluster disconnect to signaling server
+ * sends information about cluster disconnect to signaling server
  * @param cluster
  */
 const handleClusterExit = (cluster) => {
@@ -36,7 +36,7 @@ const Blockchain = () => {
     return new BlockChainModel();
 };
 
-const Networker = (blockchain, signal = false, name = null, ip = null, port = null) => {
+const Networker = (blockchain, signal = false, ip = null, port = null, name = null) => {
     return new NetworkerModel(
         blockchain,
         signal,

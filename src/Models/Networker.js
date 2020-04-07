@@ -48,7 +48,7 @@ class Networker {
     signal(isConnected = true, needData = false) {
         this.connected = isConnected;
         const signal = new net.Socket();
-        signal.connect(3500, '127.0.0.1', () => {
+        signal.connect(config.POOL_PORT, config.POOL_ADDRESS, () => {
             logger.log('debug', `connected to signaling server`);
 
             if (needData) {
