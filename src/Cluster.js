@@ -28,7 +28,7 @@ class Cluster {
         } catch (err) {
             logger.error(err);
         } finally {
-            logger.verbose('List fetched!');
+            logger.verbose(`List fetched! - ${this.list}`);
         }
     }
 

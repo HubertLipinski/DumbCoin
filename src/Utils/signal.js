@@ -43,6 +43,7 @@ const server = net.createServer((socket) => {
     });
 
     let data = prepareNetworkMapData(peers);
+    logger.log('debug', `Data: ${data}`);
     socket.write(data);
 
     socket.on('close', () => {
