@@ -19,7 +19,7 @@
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/"
-  }
+  },
   "snyk": false,
   "devDependencies": {
     "jsdoc": "^3.6.2"
