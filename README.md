@@ -3,6 +3,8 @@
 ![npm](https://img.shields.io/npm/v/dumbcoin)
 ![snyk](https://img.shields.io/snyk/vulnerabilities/npm/dumbcoin)
 
+![DumbCoin](https://i.imgur.com/XSJzxCN.png)
+
 - [What is DumbCoin](#what-is-dumbcoin)
 - [How to start](#how-to-start)
 - [P2P and Data Exchange](#p2p-and-data-exchange)
